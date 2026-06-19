@@ -61,6 +61,8 @@
 html,
 body {
   height: 100%;
+  margin: 0;
+  overflow: hidden;
   background: var(--void);
   color: var(--ink);
   font-family: var(--font-body);
@@ -95,15 +97,20 @@ body {
 
 /* ---- Layout Shell ---- */
 .app-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: grid;
   grid-template-columns: var(--sidebar-w) 1fr;
-  grid-template-rows: 1fr var(--statusbar-h);
-  height: 100vh;
+  grid-template-rows: 1fr;
   overflow: hidden;
 }
 
 .app-sidebar {
-  grid-row: 1 / -1;
+  grid-row: 1;
+  grid-column: 1;
   background: var(--panel);
   border-right: 1px solid var(--line);
 
@@ -111,7 +118,6 @@ body {
   flex-direction: column;
 
   height: 100%;
-  /* ou 100vh */
   overflow: hidden;
 }
 
@@ -122,6 +128,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  min-height: 0;
 }
 
 .app-content {
@@ -134,8 +141,7 @@ body {
 }
 
 .app-statusbar {
-  grid-column: 2;
-  grid-row: 2;
+  flex-shrink: 0;
   height: var(--statusbar-h);
   background: var(--panel);
   border-top: 1px solid var(--line);
@@ -147,10 +153,30 @@ body {
   color: var(--ink-dim);
 }
 
+.statusbar-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--line);
+}
+
 /* ---- Sidebar ---- */
 .sidebar-brand {
   padding: 20px 20px 16px;
   border-bottom: 1px solid var(--line-subtle);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-brand-logo {
+  width: 40px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-brand-name {
@@ -706,6 +732,10 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .alert-header {
@@ -738,7 +768,7 @@ body {
 
 .alert-list {
   list-style: none;
-  max-height: 240px;
+  flex: 1;
   overflow-y: auto;
 }
 
@@ -912,6 +942,10 @@ button,
     inset: 0;
     z-index: 100;
     width: 100%;
+  }
+
+  .app-statusbar {
+    grid-column: 1;
   }
 
   .metrics-grid {

@@ -1,7 +1,10 @@
-﻿<aside class="app-sidebar" role="navigation" aria-label="Navegação principal">
+<aside class="app-sidebar" role="navigation" aria-label="Navegação principal">
     <div class="sidebar-brand">
-        <div class="sidebar-brand-name">Drena<span>Aí</span></div>
-        <div class="sidebar-brand-tagline">Monitorar. Antecipar. Agir.</div>
+        <img src="{{ asset('img/logo_transparente.png') }}" alt="Drena Aí Logo" class="sidebar-brand-logo">
+        <div class="sidebar-brand-text">
+            <div class="sidebar-brand-name">Drena<span>Aí</span></div>
+            <div class="sidebar-brand-tagline">Monitorar. Antecipar. Agir.</div>
+        </div>
     </div>
 
     <nav class="sidebar-nav">
