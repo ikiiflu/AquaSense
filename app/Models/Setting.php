@@ -6,17 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
 {
-    protected $fillable = ['key', 'value', 'label'];
+    protected $table = 'configuracoes';
 
-    /** Retorna o valor de uma chave, com fallback. */
-    public static function get(string $key, mixed $default = null): mixed
+    protected $fillable = ['chave', 'valor', 'rotulo'];
+
+    public static function get(string $chave, mixed $default = null): mixed
     {
-        return static::where('key', $key)->value('value') ?? $default;
+        return static::where('chave', $chave)->value('valor') ?? $default;
     }
 
-    /** Salva ou atualiza um valor por chave. */
-    public static function set(string $key, mixed $value): void
+    public static function set(string $chave, mixed $valor): void
     {
-        static::updateOrCreate(['key' => $key], ['value' => $value]);
+        static::updateOrCreate(['chave' => $chave], ['valor' => $valor]);
     }
 }

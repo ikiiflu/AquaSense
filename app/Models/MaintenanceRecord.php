@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MaintenanceRecord extends Model
 {
+    protected $table = 'manutencoes';
+
     protected $fillable = [
-        'sensor_id', 'operator_name', 'description', 'notes', 'performed_at',
+        'sensor_id', 'operador', 'descricao', 'observacoes', 'realizado_em',
     ];
 
     protected $casts = [
-        'performed_at' => 'datetime',
+        'realizado_em' => 'datetime',
     ];
 
     public function sensor(): BelongsTo

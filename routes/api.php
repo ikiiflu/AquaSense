@@ -7,20 +7,8 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| AquaSense — API Routes
+| AquaSense — API Routes (leitura pública, mesma origem)
 |--------------------------------------------------------------------------
-|
-| GET /api/sensors                        – all sensors + latest reading
-| GET /api/sensors/{sensor}               – single sensor
-| GET /api/sensors/{sensor}/readings      – reading history (paginated)
-|
-| GET /api/alerts/active                  – unresolved alerts
-| GET /api/alerts                         – full alert history
-|
-| GET /api/analytics/summary              – fleet-wide aggregated metrics
-| GET /api/analytics/by-region            – metrics grouped by region
-| GET /api/analytics/timeseries/{sensor}  – time-series for one sensor
-|
 */
 
 Route::prefix('sensors')->group(function () {
@@ -35,7 +23,7 @@ Route::prefix('alerts')->group(function () {
 });
 
 Route::prefix('analytics')->group(function () {
-    Route::get('/summary',              [AnalyticsController::class, 'summary']);
-    Route::get('/by-region',            [AnalyticsController::class, 'byRegion']);
-    Route::get('/timeseries/{sensor}',  [AnalyticsController::class, 'timeseries']);
+    Route::get('/summary',             [AnalyticsController::class, 'summary']);
+    Route::get('/by-region',           [AnalyticsController::class, 'byRegion']);
+    Route::get('/timeseries/{sensor}', [AnalyticsController::class, 'timeseries']);
 });

@@ -25,17 +25,17 @@
     <ul class="alert-list" role="log">
         @forelse($activeAlerts as $alert)
             <li class="alert-item">
-                <div class="alert-item-bar {{ $alert->severity }}" aria-hidden="true"></div>
+                <div class="alert-item-bar {{ $alert->severidade }}" aria-hidden="true"></div>
                 <div class="alert-item-body">
                     <div class="alert-item-location">
-                        {{ $alert->sensor->name ?? '—' }}
-                        <span style="font-size:0.7rem;opacity:0.6;margin-left:0.5rem">{{ $alert->sensor->code ?? '' }}</span>
+                        {{ $alert->sensor->nome ?? '—' }}
+                        <span style="font-size:0.7rem;opacity:0.6;margin-left:0.5rem">{{ $alert->sensor->codigo ?? '' }}</span>
                     </div>
-                    <div class="alert-item-detail">{{ $alert->message }}</div>
+                    <div class="alert-item-detail">{{ $alert->mensagem }}</div>
                     <div class="alert-item-time">{{ $alert->created_at->format('d/m/Y H:i') }}</div>
                 </div>
-                <span class="alert-item-action" style="font-size:0.7rem;font-weight:600;text-transform:uppercase;color:var(--status-{{ $alert->severity }})">
-                    {{ ucfirst($alert->severity) }}
+                <span class="alert-item-action" style="font-size:0.7rem;font-weight:600;text-transform:uppercase;color:var(--status-{{ $alert->severidade }})">
+                    {{ ucfirst($alert->severidade) }}
                 </span>
             </li>
         @empty
@@ -59,10 +59,10 @@
             <li class="alert-item" style="opacity:0.55">
                 <div class="alert-item-bar ok" aria-hidden="true"></div>
                 <div class="alert-item-body">
-                    <div class="alert-item-location">{{ $alert->sensor->name ?? '—' }}</div>
-                    <div class="alert-item-detail">{{ $alert->message }}</div>
+                    <div class="alert-item-location">{{ $alert->sensor->nome ?? '—' }}</div>
+                    <div class="alert-item-detail">{{ $alert->mensagem }}</div>
                     <div class="alert-item-time">
-                        Resolvido em {{ $alert->resolved_at->format('d/m/Y H:i') }}
+                        Resolvido em {{ $alert->resolvido_em->format('d/m/Y H:i') }}
                     </div>
                 </div>
             </li>

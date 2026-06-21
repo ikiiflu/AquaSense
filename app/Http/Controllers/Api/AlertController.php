@@ -8,24 +8,22 @@ use Illuminate\Http\JsonResponse;
 
 class AlertController extends Controller
 {
-    /**
-     * GET /api/alerts/active
-     * All unresolved alerts, highest severity first.
-     */
     public function active(): JsonResponse
     {
-        $severityOrder = ['critico' => 3, 'risco' => 2, 'atencao' => 1];
+        $ordemSeveridade = ['critico' => 3, 'risco' => 2, 'atencao' => 1];
 
-        $alerts = Alert::with('sensor:id,code,name,region')
-            ->whereNull('resolved_at')
+        $alerts = Alert::with('sensor:id,codigo,nome')
+            ->whereNull('resolvido_em')
             ->orderByDesc('created_at')
             ->get()
-            ->sortByDesc(fn ($a) => $severityOrder[$a->severity] ?? 0)
+            ->sortByDesc(fn ($a) => $ordemSeveridade[$a->severidade] ?? 0)
             ->values()
             ->map(fn ($a) => [
                 'id'         => $a->id,
-                'severity'   => $a->severity,
-                'message'    => $a->message,
+                'severity'   => $a->severidade,
+                'severidade' => $a->severidade,
+                'message'    => $a->mensagem,
+                'mensagem'   => $a->mensagem,
                 'created_at' => $a->created_at->toIso8601String(),
                 'sensor'     => $a->sensor,
             ]);
@@ -33,13 +31,9 @@ class AlertController extends Controller
         return response()->json(['data' => $alerts, 'count' => $alerts->count()]);
     }
 
-    /**
-     * GET /api/alerts
-     * Full alert history (last 200), including resolved.
-     */
     public function index(): JsonResponse
     {
-        $alerts = Alert::with('sensor:id,code,name,region')
+        $alerts = Alert::with('sensor:id,codigo,nome')
             ->orderByDesc('created_at')
             ->limit(200)
             ->get();

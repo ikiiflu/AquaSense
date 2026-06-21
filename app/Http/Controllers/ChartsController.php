@@ -8,9 +8,9 @@ class ChartsController extends Controller
 {
     public function index()
     {
-        $sensors = Sensor::with('latestReading')
-            ->where('active', true)
-            ->orderBy('code')
+        $sensors = Sensor::with('ultimaLeitura')
+            ->where('ativo', true)
+            ->orderBy('codigo')
             ->get();
 
         return view('charts.index', compact('sensors'));

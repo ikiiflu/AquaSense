@@ -7,17 +7,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SensorReading extends Model
 {
+    protected $table = 'leituras';
+
     public $timestamps = false;
 
     protected $fillable = [
-        'sensor_id', 'obstruction_pct', 'rainfall_mm', 'flow_lps', 'recorded_at',
+        'sensor_id', 'obstrucao_pct', 'precipitacao_mm', 'vazao_lps', 'registrado_em',
     ];
 
     protected $casts = [
-        'obstruction_pct' => 'float',
-        'rainfall_mm'     => 'float',
-        'flow_lps'        => 'float',
-        'recorded_at'     => 'datetime',
+        'obstrucao_pct'   => 'float',
+        'precipitacao_mm' => 'float',
+        'vazao_lps'       => 'float',
+        'registrado_em'   => 'datetime',
     ];
 
     public function sensor(): BelongsTo

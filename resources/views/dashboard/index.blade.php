@@ -14,19 +14,6 @@
     </div>
 </div>
 
-{{-- Faixa de status por região --}}
-<section class="city-band" id="city-band" aria-label="Status das regiões" role="status" aria-live="polite">
-    <div class="city-band-label">Regiões</div>
-    @foreach(['Norte', 'Sul', 'Central', 'Leste', 'Oeste'] as $region)
-        @php $status = $regionStatus->get($region, 'ok'); @endphp
-        <div class="city-band-segment status-{{ $status }}"
-             title="{{ $region }} — {{ $status }}"
-             aria-label="{{ $region }} — {{ $status }}">
-            <div class="city-band-segment-highlight" aria-hidden="true"></div>
-        </div>
-    @endforeach
-</section>
-
 {{-- Cards de métricas --}}
 <section class="metrics-grid" aria-label="Indicadores da rede de drenagem">
 
@@ -49,13 +36,15 @@
         <div class="metric-card-status">
             @php
                 $obs = $metrics['avg_obstruction'] ?? 0;
-                $obsStatus = $obs >= 70 ? 'critico' : ($obs >= 40 ? 'risco' : ($obs >= 10 ? 'atencao' : 'ok'));
-                $obsLabel  = ['ok' => 'Dentro do limite', 'atencao' => 'Atenção', 'risco' => 'Risco elevado', 'critico' => 'Crítico'][$obsStatus];
+                $obsStatus = is_null($metrics['avg_obstruction']) ? 'ok' : ($obs >= 70 ? 'critico' : ($obs >= 40 ? 'risco' : ($obs >= 10 ? 'atencao' : 'ok')));
+                $obsLabel  = is_null($metrics['avg_obstruction']) ? 'Sem dados' : ['ok' => 'Dentro do limite', 'atencao' => 'Atenção', 'risco' => 'Risco elevado', 'critico' => 'Crítico'][$obsStatus];
             @endphp
             <div class="metric-card-status-dot {{ $obsStatus }}" aria-hidden="true"></div>
             {{ $obsLabel }}
         </div>
+        @if(!is_null($metrics['avg_obstruction']))
         <div class="metric-card-spark" aria-hidden="true"></div>
+        @endif
     </div>
 
     <div class="metric-card" role="region" aria-label="Índice pluviométrico">
@@ -77,12 +66,14 @@
         <div class="metric-card-status">
             @php
                 $rain = $metrics['avg_rainfall'] ?? 0;
-                $rainLabel = $rain > 10 ? 'Chuva intensa' : ($rain > 4 ? 'Chuva moderada' : 'Chuva fraca');
+                $rainLabel = is_null($metrics['avg_rainfall']) ? 'Sem dados' : ($rain > 10 ? 'Chuva intensa' : ($rain > 4 ? 'Chuva moderada' : 'Chuva fraca'));
             @endphp
             <div class="metric-card-status-dot ok" aria-hidden="true"></div>
             {{ $rainLabel }}
         </div>
+        @if(!is_null($metrics['avg_rainfall']))
         <div class="metric-card-spark" aria-hidden="true"></div>
+        @endif
     </div>
 
     <div class="metric-card" role="region" aria-label="Volume de vazão das galerias">
@@ -103,9 +94,11 @@
         </div>
         <div class="metric-card-status">
             <div class="metric-card-status-dot ok" aria-hidden="true"></div>
-            Fluxo normal
+            {{ is_null($metrics['avg_flow']) ? 'Sem dados' : 'Fluxo normal' }}
         </div>
+        @if(!is_null($metrics['avg_flow']))
         <div class="metric-card-spark" aria-hidden="true"></div>
+        @endif
     </div>
 
 </section>
@@ -122,10 +115,10 @@
     <ul class="alert-list" id="alert-list" role="log" aria-label="Lista de alertas ativos">
         @forelse($activeAlerts as $alert)
             <li class="alert-item">
-                <div class="alert-item-bar {{ $alert->severity }}" aria-hidden="true"></div>
+                <div class="alert-item-bar {{ $alert->severidade }}" aria-hidden="true"></div>
                 <div class="alert-item-body">
-                    <div class="alert-item-location">{{ $alert->sensor->name ?? '—' }}</div>
-                    <div class="alert-item-detail">{{ $alert->message }}</div>
+                    <div class="alert-item-location">{{ $alert->sensor->nome ?? '—' }}</div>
+                    <div class="alert-item-detail">{{ $alert->mensagem }}</div>
                     <div class="alert-item-time">{{ $alert->created_at->format('H:i') }}</div>
                 </div>
                 <a href="{{ route('alerts.index') }}" class="alert-item-action">Ver</a>

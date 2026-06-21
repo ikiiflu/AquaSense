@@ -22,7 +22,7 @@
     @else
         <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
             <thead>
-                <tr style="text-align:left;border-bottom:1px solid var(--border);color:var(--text-muted)">
+                <tr style="text-align:left;border-bottom:1px solid var(--line);color:var(--ink-dim)">
                     <th style="padding:0.5rem 0.75rem">Data</th>
                     <th style="padding:0.5rem 0.75rem">Sensor</th>
                     <th style="padding:0.5rem 0.75rem">Operador</th>
@@ -32,19 +32,19 @@
             </thead>
             <tbody>
                 @foreach($records as $r)
-                    <tr style="border-bottom:1px solid color-mix(in srgb,var(--border) 50%,transparent)">
-                        <td style="padding:0.5rem 0.75rem;font-family:var(--font-mono);color:var(--text-secondary)">
-                            {{ $r->performed_at->format('d/m/Y H:i') }}
+                    <tr style="border-bottom:1px solid color-mix(in srgb,var(--line) 50%,transparent)">
+                        <td style="padding:0.5rem 0.75rem;font-family:var(--font-mono);color:var(--ink-dim)">
+                            {{ $r->realizado_em->format('d/m/Y H:i') }}
                         </td>
                         <td style="padding:0.5rem 0.75rem">
-                            <span style="font-size:0.7rem;color:var(--accent);font-family:var(--font-mono)">
-                                {{ $r->sensor->code ?? '—' }}
+                            <span style="font-size:0.7rem;color:var(--flow);font-family:var(--font-mono)">
+                                {{ $r->sensor->codigo ?? '—' }}
                             </span><br>
-                            <span>{{ $r->sensor->name ?? '—' }}</span>
+                            <span>{{ $r->sensor->nome ?? '—' }}</span>
                         </td>
-                        <td style="padding:0.5rem 0.75rem">{{ $r->operator_name }}</td>
-                        <td style="padding:0.5rem 0.75rem">{{ $r->description }}</td>
-                        <td style="padding:0.5rem 0.75rem;color:var(--text-muted)">{{ $r->notes ?? '—' }}</td>
+                        <td style="padding:0.5rem 0.75rem">{{ $r->operador }}</td>
+                        <td style="padding:0.5rem 0.75rem">{{ $r->descricao }}</td>
+                        <td style="padding:0.5rem 0.75rem;color:var(--ink-dim)">{{ $r->observacoes ?? '—' }}</td>
                     </tr>
                 @endforeach
             </tbody>

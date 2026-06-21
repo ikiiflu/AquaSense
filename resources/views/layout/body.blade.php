@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Monitoramento inteligente de drenagem urbana em tempo real">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="reading-interval" content="{{ (int) (\App\Models\Setting::get('intervalo_leitura_seg', 60)) }}">
     <title>@yield('title', 'AquaSense')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

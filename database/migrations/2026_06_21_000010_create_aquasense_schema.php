@@ -4,98 +4,74 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * AquaSense — Schema completo do banco de dados
- *
- * Tabelas:
- *   sensors             — Cadastro dos sensores instalados nos bueiros
- *   sensor_readings     — Leituras contínuas de cada sensor (ON DELETE CASCADE)
- *   alerts              — Alertas gerados automaticamente por limiar de obstrução
- *   maintenance_records — Histórico de manutenções realizadas por equipes de campo
- *
- * Formas Normais atendidas:
- *   1FN — colunas atômicas, sem grupos repetitivos
- *   2FN — todos os não-chave dependem da chave primária completa
- *   3FN — sem dependências transitivas; sensor_readings referencia sensors via FK
- */
 return new class extends Migration
 {
     public function up(): void
     {
-        // ------------------------------------------------------------------ //
-        // sensors
-        // ------------------------------------------------------------------ //
-        Schema::create('sensors', function (Blueprint $table) {
+        // ── sensores ─────────────────────────────────────────────────────────
+        Schema::create('sensores', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 20)->unique();       // AQS-001 … AQS-010
-            $table->string('name', 100);
-            $table->string('address', 200);
-            $table->string('region', 50);               // Norte | Sul | Central | Leste | Oeste
-            $table->decimal('latitude',  10, 7);        // precisão geoespacial: ±0.011 m
+            $table->string('codigo', 20)->unique();
+            $table->string('nome', 100);
+            $table->string('endereco', 200);
+            $table->foreignId('bairro_id')->nullable()->constrained('bairros')->nullOnDelete();
+            $table->decimal('latitude',  10, 7);
             $table->decimal('longitude', 10, 7);
-            $table->boolean('active')->default(true);
+            $table->boolean('ativo')->default(true);
             $table->timestamps();
         });
 
-        // ------------------------------------------------------------------ //
-        // sensor_readings
-        // ------------------------------------------------------------------ //
-        Schema::create('sensor_readings', function (Blueprint $table) {
+        // ── leituras ──────────────────────────────────────────────────────────
+        Schema::create('leituras', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sensor_id')
-                  ->constrained('sensors')
+                  ->constrained('sensores')
                   ->onDelete('cascade');
 
-            $table->decimal('obstruction_pct', 5, 2);  // 0,00 – 100,00 %
-            $table->decimal('rainfall_mm',     7, 3);  // precipitação em mm
-            $table->decimal('flow_lps',        9, 3);  // vazão em L/s
+            $table->decimal('obstrucao_pct',    5, 2);
+            $table->decimal('precipitacao_mm',  7, 3);
+            $table->decimal('vazao_lps',        9, 3);
 
-            $table->timestamp('recorded_at')->useCurrent();
+            $table->timestamp('registrado_em')->useCurrent();
 
-            // Índice composto — suporta consultas analíticas de série temporal
-            $table->index(['sensor_id', 'recorded_at']);
+            $table->index(['sensor_id', 'registrado_em']);
         });
 
-        // ------------------------------------------------------------------ //
-        // alerts
-        // ------------------------------------------------------------------ //
-        Schema::create('alerts', function (Blueprint $table) {
+        // ── alertas ───────────────────────────────────────────────────────────
+        Schema::create('alertas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sensor_id')
-                  ->constrained('sensors')
+                  ->constrained('sensores')
                   ->onDelete('cascade');
 
-            // atencao | risco | critico
-            $table->string('severity', 20);
-            $table->text('message');
-            $table->timestamp('resolved_at')->nullable();
+            $table->string('severidade', 20); // atencao | risco | critico
+            $table->text('mensagem');
+            $table->timestamp('resolvido_em')->nullable();
             $table->timestamps();
 
-            $table->index(['sensor_id', 'resolved_at']);
+            $table->index(['sensor_id', 'resolvido_em']);
         });
 
-        // ------------------------------------------------------------------ //
-        // maintenance_records
-        // ------------------------------------------------------------------ //
-        Schema::create('maintenance_records', function (Blueprint $table) {
+        // ── manutencoes ───────────────────────────────────────────────────────
+        Schema::create('manutencoes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sensor_id')
-                  ->constrained('sensors')
+                  ->constrained('sensores')
                   ->onDelete('cascade');
 
-            $table->string('operator_name', 100);
-            $table->text('description');
-            $table->text('notes')->nullable();
-            $table->timestamp('performed_at');
+            $table->string('operador', 100);
+            $table->text('descricao');
+            $table->text('observacoes')->nullable();
+            $table->timestamp('realizado_em');
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('maintenance_records');
-        Schema::dropIfExists('alerts');
-        Schema::dropIfExists('sensor_readings');
-        Schema::dropIfExists('sensors');
+        Schema::dropIfExists('manutencoes');
+        Schema::dropIfExists('alertas');
+        Schema::dropIfExists('leituras');
+        Schema::dropIfExists('sensores');
     }
 };

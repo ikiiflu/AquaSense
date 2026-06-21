@@ -10,58 +10,56 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
 /**
- * Simulates continuous insertion of sensor readings.
+ * Simula inserção contínua de leituras dos sensores.
  *
- * Single batch:       php artisan sensor:simulate
- * Loop (DB interval): php artisan sensor:simulate --loop=auto
- * Loop every 30s:     php artisan sensor:simulate --loop=30
- * Seed 24h back:      php artisan sensor:simulate --backfill=24
+ * Lote único:          php artisan sensor:simulate
+ * Loop (intervalo DB): php artisan sensor:simulate --loop=auto
+ * Loop a cada 30s:     php artisan sensor:simulate --loop=30
+ * Histórico 24h:       php artisan sensor:simulate --backfill=24
  */
 class SimulateSensorReadings extends Command
 {
     protected $signature = 'sensor:simulate
-                            {--loop=0     : Seconds between batches, or "auto" to read from DB settings}
-                            {--backfill=0 : Insert N hours of historical readings at 1-min intervals}';
+                            {--loop=0     : Segundos entre lotes, ou "auto" para usar o DB}
+                            {--backfill=0 : Inserir N horas de histórico em intervalos de 1 min}';
 
-    protected $description = 'Inserts simulated sensor readings into the database';
+    protected $description = 'Insere leituras simuladas dos sensores no banco de dados';
 
-    /** Tracks last obstruction per sensor to produce gradual drift. */
-    private array $state = [];
+    private array $estado = [];
 
     public function handle(): int
     {
         $loopOpt  = $this->option('loop');
         $loop     = $loopOpt === 'auto'
-            ? (int) Setting::get('reading_interval_seconds', 60)
+            ? (int) Setting::get('intervalo_leitura_seg', 60)
             : (int) $loopOpt;
         $backfill = (int) $this->option('backfill');
 
-        $sensors = Sensor::where('active', true)->get();
+        $sensores = Sensor::where('ativo', true)->get();
 
-        if ($sensors->isEmpty()) {
-            $this->error('No active sensors found. Run: php artisan db:seed');
+        if ($sensores->isEmpty()) {
+            $this->error('Nenhum sensor ativo encontrado. Cadastre sensores pelo Mapa Operacional.');
             return self::FAILURE;
         }
 
-        // Initialise drift state from latest DB reading (or sensible defaults)
-        foreach ($sensors as $sensor) {
-            $last = $sensor->latestReading;
-            $this->state[$sensor->id] = [
-                'obstruction' => $last?->obstruction_pct ?? random_int(5, 30),
-                'flow_base'   => $last?->flow_lps        ?? random_int(200, 500),
+        foreach ($sensores as $sensor) {
+            $ultima = $sensor->ultimaLeitura;
+            $this->estado[$sensor->id] = [
+                'obstrucao' => $ultima?->obstrucao_pct    ?? random_int(5, 30),
+                'vazao_base' => $ultima?->vazao_lps       ?? random_int(200, 500),
             ];
         }
 
         if ($backfill > 0) {
-            $this->backfill($sensors, $backfill);
+            $this->backfill($sensores, $backfill);
             return self::SUCCESS;
         }
 
         do {
-            $this->insertBatch($sensors);
+            $this->inserirLote($sensores);
 
             if ($loop > 0) {
-                $this->line("  Next batch in {$loop}s… (Ctrl+C to stop)");
+                $this->line("  Próximo lote em {$loop}s… (Ctrl+C para parar)");
                 sleep($loop);
             }
         } while ($loop > 0);
@@ -69,144 +67,117 @@ class SimulateSensorReadings extends Command
         return self::SUCCESS;
     }
 
-    // -------------------------------------------------------------------------
-
-    /** Insert one reading per sensor for the current moment. */
-    private function insertBatch(\Illuminate\Support\Collection $sensors): void
+    private function inserirLote(\Illuminate\Support\Collection $sensores): void
     {
-        $now  = Carbon::now();
-        $rows = [];
+        $agora = Carbon::now();
+        $rows  = [];
 
-        foreach ($sensors as $sensor) {
-            $reading = $this->generateReading($sensor->id, $now);
-            $rows[]  = $reading;
-
-            $this->evaluateAlerts($sensor, $reading);
+        foreach ($sensores as $sensor) {
+            $leitura = $this->gerarLeitura($sensor->id, $agora);
+            $rows[]  = $leitura;
+            $this->avaliarAlertas($sensor, $leitura);
         }
 
         SensorReading::insert($rows);
 
-        $this->info(
-            "[{$now->format('H:i:s')}] Inserted " . count($rows) . " readings"
-        );
+        $this->info("[{$agora->format('H:i:s')}] Inseridas " . count($rows) . " leituras");
     }
 
-    /** Insert historical readings from N hours ago up to now (1-min intervals). */
-    private function backfill(\Illuminate\Support\Collection $sensors, int $hours): void
+    private function backfill(\Illuminate\Support\Collection $sensores, int $horas): void
     {
-        $start  = Carbon::now()->subHours($hours);
-        $end    = Carbon::now();
-        $cursor = $start->copy();
+        $inicio = Carbon::now()->subHours($horas);
+        $fim    = Carbon::now();
+        $cursor = $inicio->copy();
         $total  = 0;
 
-        $this->info("Backfilling {$hours}h of history from {$start->format('Y-m-d H:i')} …");
-        $bar = $this->output->createProgressBar((int) ($hours * 60));
+        $this->info("Preenchendo {$horas}h de histórico a partir de {$inicio->format('Y-m-d H:i')} …");
+        $barra = $this->output->createProgressBar((int) ($horas * 60));
 
-        while ($cursor->lte($end)) {
+        while ($cursor->lte($fim)) {
             $rows = [];
-            foreach ($sensors as $sensor) {
-                $rows[] = $this->generateReading($sensor->id, $cursor->copy());
+            foreach ($sensores as $sensor) {
+                $rows[] = $this->gerarLeitura($sensor->id, $cursor->copy());
             }
             SensorReading::insert($rows);
             $total  += count($rows);
             $cursor->addMinute();
-            $bar->advance();
+            $barra->advance();
         }
 
-        $bar->finish();
+        $barra->finish();
         $this->newLine();
-        $this->info("Done. Inserted {$total} historical readings.");
+        $this->info("Concluído. {$total} leituras inseridas.");
     }
 
-    // -------------------------------------------------------------------------
-
-    /**
-     * Generates a realistic reading for one sensor at a given moment.
-     * Behaviour:
-     *  - Rainfall peaks 14:00–18:00 (afternoon storms typical of MG interior)
-     *  - Obstruction drifts ±5 % per cycle; capped at [0, 100]
-     *  - Flow decreases as obstruction increases (inverse linear model)
-     */
-    private function generateReading(int $sensorId, Carbon $at): array
+    private function gerarLeitura(int $sensorId, Carbon $em): array
     {
-        $hour = (int) $at->format('H');
+        $hora = (int) $em->format('H');
 
-        // Rainfall model (mm)
-        $isStorm = $hour >= 14 && $hour <= 18;
-        $base    = $isStorm ? mt_rand(12, 20) : mt_rand(1, 4);
-        $rainfall = round($base + (mt_rand(-100, 100) / 100), 3);
+        $tempestade      = $hora >= 14 && $hora <= 18;
+        $base            = $tempestade ? mt_rand(12, 20) : mt_rand(1, 4);
+        $precipitacao    = round($base + (mt_rand(-100, 100) / 100), 3);
 
-        // Obstruction drift
-        $prev  = $this->state[$sensorId]['obstruction'];
-        $delta = (mt_rand(0, 100) / 100 - 0.45) * 5;   // slightly upward bias
-        $obs   = max(0.0, min(100.0, $prev + $delta + ($isStorm ? 1.5 : 0)));
-        $this->state[$sensorId]['obstruction'] = $obs;
+        $prev       = $this->estado[$sensorId]['obstrucao'];
+        $delta      = (mt_rand(0, 100) / 100 - 0.45) * 5;
+        $obstrucao  = max(0.0, min(100.0, $prev + $delta + ($tempestade ? 1.5 : 0)));
+        $this->estado[$sensorId]['obstrucao'] = $obstrucao;
 
-        // Flow model: max flow at 0% obstruction, near-zero at 100%
-        $flowMax = $this->state[$sensorId]['flow_base'];
-        $flowFactor = max(0.02, 1.0 - ($obs / 100) * 0.95);
-        $flow = round($flowMax * $flowFactor + (mt_rand(-50, 50) / 10), 3);
+        $vazaoMax    = $this->estado[$sensorId]['vazao_base'];
+        $fatorVazao  = max(0.02, 1.0 - ($obstrucao / 100) * 0.95);
+        $vazao       = round($vazaoMax * $fatorVazao + (mt_rand(-50, 50) / 10), 3);
 
         return [
             'sensor_id'       => $sensorId,
-            'obstruction_pct' => round($obs, 2),
-            'rainfall_mm'     => $rainfall,
-            'flow_lps'        => max(0.0, $flow),
-            'recorded_at'     => $at->format('Y-m-d H:i:s'),
+            'obstrucao_pct'   => round($obstrucao, 2),
+            'precipitacao_mm' => $precipitacao,
+            'vazao_lps'       => max(0.0, $vazao),
+            'registrado_em'   => $em->format('Y-m-d H:i:s'),
         ];
     }
 
-    /**
-     * Creates or resolves alerts based on current obstruction level.
-     * Only one active alert per sensor per severity is kept.
-     */
-    private function evaluateAlerts(Sensor $sensor, array $reading): void
+    private function avaliarAlertas(Sensor $sensor, array $leitura): void
     {
-        $obs = $reading['obstruction_pct'];
+        $obs = $leitura['obstrucao_pct'];
 
-        // Limiares configuráveis via tabela settings
-        $tCritico = (float) Setting::get('alert_threshold_critico', 70);
-        $tRisco   = (float) Setting::get('alert_threshold_risco',   40);
-        $tAtencao = (float) Setting::get('alert_threshold_atencao', 10);
+        $lCritico = (float) Setting::get('limite_critico', 70);
+        $lRisco   = (float) Setting::get('limite_risco',   40);
+        $lAtencao = (float) Setting::get('limite_atencao', 10);
 
-        $severity = match (true) {
-            $obs >= $tCritico => 'critico',
-            $obs >= $tRisco   => 'risco',
-            $obs >= $tAtencao => 'atencao',
+        $severidade = match (true) {
+            $obs >= $lCritico => 'critico',
+            $obs >= $lRisco   => 'risco',
+            $obs >= $lAtencao => 'atencao',
             default           => null,
         };
 
-        // Resolve all active alerts if sensor is back to normal
-        if ($severity === null) {
+        if ($severidade === null) {
             Alert::where('sensor_id', $sensor->id)
-                 ->whereNull('resolved_at')
-                 ->update(['resolved_at' => now()]);
+                 ->whereNull('resolvido_em')
+                 ->update(['resolvido_em' => now()]);
             return;
         }
 
-        $messages = [
+        $mensagens = [
             'critico' => "Obstrução de {$obs}%. Risco iminente de transbordamento. Intervenção urgente necessária.",
             'risco'   => "Obstrução de {$obs}%. Inspeção recomendada em até 2 horas.",
             'atencao' => "Obstrução de {$obs}%. Monitoramento contínuo recomendado.",
         ];
 
-        // Resolve alerts for lower severities
         Alert::where('sensor_id', $sensor->id)
-             ->whereNull('resolved_at')
-             ->where('severity', '!=', $severity)
-             ->update(['resolved_at' => now()]);
+             ->whereNull('resolvido_em')
+             ->where('severidade', '!=', $severidade)
+             ->update(['resolvido_em' => now()]);
 
-        // Open a new alert only if none active for this severity
-        $exists = Alert::where('sensor_id', $sensor->id)
-                       ->where('severity', $severity)
-                       ->whereNull('resolved_at')
+        $existe = Alert::where('sensor_id', $sensor->id)
+                       ->where('severidade', $severidade)
+                       ->whereNull('resolvido_em')
                        ->exists();
 
-        if (! $exists) {
+        if (! $existe) {
             Alert::create([
-                'sensor_id' => $sensor->id,
-                'severity'  => $severity,
-                'message'   => $messages[$severity],
+                'sensor_id'  => $sensor->id,
+                'severidade' => $severidade,
+                'mensagem'   => $mensagens[$severidade],
             ]);
         }
     }

@@ -3,72 +3,94 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Sensor extends Model
 {
+    protected $table = 'sensores';
+
     protected $fillable = [
-        'code', 'name', 'address', 'region', 'latitude', 'longitude', 'active',
+        'codigo', 'nome', 'endereco', 'bairro_id', 'latitude', 'longitude', 'ativo',
     ];
 
     protected $casts = [
         'latitude'  => 'float',
         'longitude' => 'float',
-        'active'    => 'boolean',
+        'ativo'     => 'boolean',
     ];
 
+    public function bairro(): BelongsTo
+    {
+        return $this->belongsTo(Bairro::class, 'bairro_id');
+    }
+
+    public function getBairroNomeAttribute(): string
+    {
+        return $this->bairro?->nome ?? '—';
+    }
+
+    public function leituras(): HasMany
+    {
+        return $this->hasMany(SensorReading::class)->orderByDesc('registrado_em');
+    }
+
+    /** @deprecated use leituras() */
     public function readings(): HasMany
     {
-        return $this->hasMany(SensorReading::class)->orderByDesc('recorded_at');
+        return $this->leituras();
     }
 
+    public function ultimaLeitura(): HasOne
+    {
+        return $this->hasOne(SensorReading::class)->latestOfMany('registrado_em');
+    }
+
+    /** @deprecated use ultimaLeitura() */
     public function latestReading(): HasOne
     {
-        return $this->hasOne(SensorReading::class)->latestOfMany('recorded_at');
+        return $this->ultimaLeitura();
     }
 
-    public function alerts(): HasMany
+    public function alertas(): HasMany
     {
         return $this->hasMany(Alert::class);
     }
 
-    public function activeAlerts(): HasMany
+    public function alertasAtivos(): HasMany
     {
-        return $this->hasMany(Alert::class)->whereNull('resolved_at');
+        return $this->hasMany(Alert::class)->whereNull('resolvido_em');
     }
 
-    public function maintenanceRecords(): HasMany
+    public function manutencoes(): HasMany
     {
         return $this->hasMany(MaintenanceRecord::class);
     }
 
-    /** Thresholds cached per-request to avoid N queries for N sensors. */
-    private static ?array $thresholds = null;
+    private static ?array $limiares = null;
 
-    private static function thresholds(): array
+    private static function limiares(): array
     {
-        if (static::$thresholds !== null) {
-            return static::$thresholds;
+        if (static::$limiares !== null) {
+            return static::$limiares;
         }
         try {
-            static::$thresholds = [
-                'critico' => (float) Setting::get('alert_threshold_critico', 70),
-                'risco'   => (float) Setting::get('alert_threshold_risco',   40),
-                'atencao' => (float) Setting::get('alert_threshold_atencao', 10),
+            static::$limiares = [
+                'critico' => (float) Setting::get('limite_critico', 70),
+                'risco'   => (float) Setting::get('limite_risco',   40),
+                'atencao' => (float) Setting::get('limite_atencao', 10),
             ];
         } catch (\Throwable) {
-            // Tabela settings ainda não existe (antes do migrate)
-            static::$thresholds = ['critico' => 70.0, 'risco' => 40.0, 'atencao' => 10.0];
+            static::$limiares = ['critico' => 70.0, 'risco' => 40.0, 'atencao' => 10.0];
         }
-        return static::$thresholds;
+        return static::$limiares;
     }
 
-    /** Derives status label from latest obstruction reading, respecting DB thresholds. */
     public function getStatusAttribute(): string
     {
-        $obs = $this->latestReading?->obstruction_pct ?? 0;
-        $t   = static::thresholds();
+        $obs = $this->ultimaLeitura?->obstrucao_pct ?? 0;
+        $t   = static::limiares();
 
         return match (true) {
             $obs >= $t['critico'] => 'critico',

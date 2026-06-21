@@ -61,6 +61,16 @@
             Gráficos
         </a>
 
+        <a href="{{ route('comandos.index') }}"
+           class="{{ request()->routeIs('comandos.*') ? 'is-active' : '' }}"
+           aria-current="{{ request()->routeIs('comandos.*') ? 'page' : 'false' }}">
+            <svg class="sidebar-nav-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="1" y="3" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M4 7l2 2-2 2M8 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Últimos Comandos
+        </a>
+
         <a href="{{ route('settings.index') }}"
            class="{{ request()->routeIs('settings.*') ? 'is-active' : '' }}"
            aria-current="{{ request()->routeIs('settings.*') ? 'page' : 'false' }}">
@@ -83,18 +93,18 @@
                     <li class="sensor-list-item js-sensor-item"
                         tabindex="0"
                         role="option"
-                        aria-label="{{ $sensor->name }} — {{ $sensor->address }}, status {{ $sensor->status }}"
+                        aria-label="{{ $sensor->nome }} — {{ $sensor->endereco }}, status {{ $sensor->status }}"
                         data-lat="{{ $sensor->latitude }}"
                         data-lng="{{ $sensor->longitude }}"
                         data-sensor-id="{{ $sensor->id }}">
                         <div class="sensor-dot status-{{ $sensor->status }}" aria-hidden="true"></div>
                         <div class="sensor-info">
-                            <div class="sensor-name">{{ $sensor->name }}</div>
-                            <div class="sensor-address">{{ $sensor->address }}</div>
+                            <div class="sensor-name">{{ $sensor->nome }}</div>
+                            <div class="sensor-address">{{ $sensor->endereco }}</div>
                         </div>
                     </li>
                 @empty
-                    <li class="sensor-list-empty" style="padding:0.75rem 1rem;font-size:0.75rem;color:var(--text-muted)">
+                    <li class="sensor-list-empty" style="padding:0.75rem 1rem;font-size:0.75rem;color:var(--ink-dim)">
                         Sem sensores cadastrados
                     </li>
                 @endforelse
@@ -103,10 +113,31 @@
     @endif
 
     <div class="sidebar-operator">
-        <div class="operator-avatar" aria-hidden="true">CD</div>
-        <div>
-            <div class="operator-name">Carlos Drumond</div>
-            <div class="operator-role">Defesa Civil — Plantão</div>
+        @auth
+        @php
+            $authUser = auth()->user();
+            $initials = collect(explode(' ', $authUser->name))
+                ->take(2)
+                ->map(fn($w) => strtoupper(substr($w, 0, 1)))
+                ->implode('');
+        @endphp
+        <div class="operator-avatar" aria-hidden="true">{{ $initials }}</div>
+        <div style="flex:1;min-width:0">
+            <div class="operator-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $authUser->name }}</div>
+            <div class="operator-role" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $authUser->email }}</div>
         </div>
+        <form method="POST" action="{{ route('logout') }}" style="flex-shrink:0">
+            @csrf
+            <button type="submit" title="Sair"
+                    style="background:none;border:none;cursor:pointer;padding:4px;color:var(--ink-muted);
+                           display:flex;align-items:center;transition:color var(--transition-fast)"
+                    onmouseover="this.style.color='var(--status-critico)'"
+                    onmouseout="this.style.color='var(--ink-muted)'">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </form>
+        @endauth
     </div>
 </aside>

@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Alert extends Model
 {
+    protected $table = 'alertas';
+
     protected $fillable = [
-        'sensor_id', 'severity', 'message', 'resolved_at',
+        'sensor_id', 'severidade', 'mensagem', 'resolvido_em',
     ];
 
     protected $casts = [
-        'resolved_at' => 'datetime',
+        'resolvido_em' => 'datetime',
     ];
 
     public function sensor(): BelongsTo
@@ -22,6 +24,6 @@ class Alert extends Model
 
     public function isActive(): bool
     {
-        return $this->resolved_at === null;
+        return $this->resolvido_em === null;
     }
 }
