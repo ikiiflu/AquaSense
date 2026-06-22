@@ -1,10 +1,12 @@
 /**
  * AquaSense – script do frontend
- * Responsável por: relógio, atualização dos cards de métricas (/api/sensors),
- * dots de status da sidebar e recarga automática global da página.
+ * Responsável por: relógio, geração de leituras em background,
+ * atualização dos cards de métricas (/api/sensors), dots de status
+ * da sidebar e recarga automática global da página (modo automático).
  *
- * A geração de leituras é feita exclusivamente pelo servidor via cron
- * (php artisan schedule:run a cada minuto). O browser só exibe os dados.
+ * Geração de leituras:
+ *   - Browser aberto: gerada a cada intervalo_leitura_seg (ambos os modos)
+ *   - Browser fechado: cron (schedule:run) como fallback
  */
 
 (function () {
@@ -15,9 +17,10 @@
     return el ? el.content : fallback;
   };
 
-  var CSRF_TOKEN          = metaGet("csrf-token", "");
-  var REFRESH_MODE        = metaGet("refresh-mode", "manual");
-  var REFRESH_INTERVAL_MS = parseInt(metaGet("refresh-interval", "60"), 10) * 1000;
+  var CSRF_TOKEN           = metaGet("csrf-token", "");
+  var REFRESH_MODE         = metaGet("refresh-mode", "manual");
+  var REFRESH_INTERVAL_MS  = parseInt(metaGet("refresh-interval", "60"), 10) * 1000;
+  var READING_INTERVAL_MS  = parseInt(metaGet("reading-interval", "60"), 10) * 1000;
 
   // ---- Relógio ----
   var clockEl = document.getElementById("statusbar-clock");
@@ -26,6 +29,17 @@
     clockEl.textContent = new Date().toLocaleTimeString("pt-BR", {
       hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
     });
+  }
+
+  // ---- Geração de leitura em background (ambos os modos) ----
+  function generateReading() {
+    fetch("/api/leituras/gerar", {
+      method: "POST",
+      headers: { "X-CSRF-TOKEN": CSRF_TOKEN, "Content-Type": "application/json" },
+      body: JSON.stringify({ force: true })
+    }).then(function () {
+      fetchMetrics();
+    }).catch(function (err) { console.warn("AquaSense: erro ao gerar leitura:", err); });
   }
 
   // ---- Fetch sensores e atualiza cards ----
@@ -76,10 +90,10 @@
   });
 
   // ---- Sidebar mobile: hamburger toggle ----
-  var sidebar    = document.querySelector(".app-sidebar");
-  var overlay    = document.getElementById("sidebar-overlay");
-  var menuBtn    = document.getElementById("mobile-menu-btn");
-  var closeBtn   = document.getElementById("sidebar-close-btn");
+  var sidebar  = document.querySelector(".app-sidebar");
+  var overlay  = document.getElementById("sidebar-overlay");
+  var menuBtn  = document.getElementById("mobile-menu-btn");
+  var closeBtn = document.getElementById("sidebar-close-btn");
 
   function openSidebar() {
     sidebar.classList.add("is-open");
@@ -97,15 +111,13 @@
   if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
   if (overlay)  overlay.addEventListener("click", closeSidebar);
 
-  // Fecha sidebar ao navegar (mobile)
   document.querySelectorAll(".sidebar-nav a").forEach(function (link) {
     link.addEventListener("click", function () {
       if (window.innerWidth <= 960) closeSidebar();
     });
   });
 
-  // ---- Recarga automática global (timer persiste entre navegações via localStorage) ----
-  // O servidor gera leituras via cron; o browser só precisa recarregar para ver os dados novos.
+  // ---- Recarga automática global (modo automático) ----
   var isMapPage = window.location.pathname === "/map";
 
   if (!isMapPage && REFRESH_MODE === "automatico" && REFRESH_INTERVAL_MS >= 5000) {
@@ -122,12 +134,7 @@
 
     function doRefresh() {
       localStorage.setItem(STORAGE_KEY, Date.now() + REFRESH_INTERVAL_MS);
-      // Solicita geração de leitura (sem force — gerarSeNecessario respeita intervalo_leitura_seg).
-      // O cron é o fallback quando o navegador está fechado.
-      fetch("/api/leituras/gerar", {
-        method: "POST",
-        headers: { "X-CSRF-TOKEN": CSRF_TOKEN, "Content-Type": "application/json" }
-      }).finally(function () { location.reload(); });
+      location.reload();
     }
 
     setInterval(function () {
@@ -148,7 +155,7 @@
   tickClock();
   fetchMetrics();
 
-  setInterval(tickClock,    1000);
-  setInterval(fetchMetrics, 30000);
+  setInterval(tickClock,       1000);
+  setInterval(generateReading, READING_INTERVAL_MS);
 
 })();

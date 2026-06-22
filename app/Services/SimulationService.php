@@ -66,10 +66,12 @@ class SimulationService
         $tendencia = match (true) {
             $tempestade  => 2.5,
             $chuvaForte  => 1.5,
-            $semChuva    => -0.8,
-            default      => 0.0,
+            $semChuva    => -2.0,
+            default      => -0.3,
         };
-        $delta     = (mt_rand(0, 100) / 100 - 0.45) * 5 + $tendencia;
+        // Drenagem progressiva: quanto mais obstruído, maior a força de limpeza natural
+        $drenagem  = $obstrucaoPrev > 70 ? ($obstrucaoPrev - 70) / 100 : 0.0;
+        $delta     = (mt_rand(0, 100) / 100 - 0.45) * 5 + $tendencia - $drenagem;
         $obstrucao = max(0.0, min(100.0, (float) $obstrucaoPrev + $delta));
 
         // Precipitação conforme modo

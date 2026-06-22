@@ -10,10 +10,7 @@ return new class extends Migration
     {
         Schema::create('enderecos', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('logradouro', 150);
-            $table->string('numero', 10)->default('S/N');
-            $table->string('complemento', 100)->nullable();
-            $table->string('referencia', 200)->nullable();
+            $table->string('logradouro', 150)->unique();
             $table->timestamps();
         });
     }

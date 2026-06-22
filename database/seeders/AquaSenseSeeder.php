@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -33,6 +33,11 @@ class AquaSenseSeeder extends Seeder
             'Rua Manoel Gonçalves de Castro',
             'Rua Raimundo Cimini',
             'Praça Cesário Alvim',
+            'Av. Moacir de Matos',
+            'Av. João Caetano do Nascimento',
+            'Rua Coronel Pedro Martins',
+            'Rua Dona Zeca Chagas',
+            'Rua Luiz Antônio Cortes',
         ];
 
         foreach ($enderecos as $logradouro) {
@@ -46,13 +51,18 @@ class AquaSenseSeeder extends Seeder
         $esplanada = Bairro::where('nome', 'Esplanada')->first();
         $zacarias  = Bairro::where('nome', 'Zacarias')->first();
 
-        $avOlegario   = Endereco::where('logradouro', 'Av. Olegário Maciel')->first();
-        $avCatarina   = Endereco::where('logradouro', 'Av. Catarina Cimini')->first();
-        $avAnaPena    = Endereco::where('logradouro', 'Av. Ana Pena de Faria')->first();
-        $ruaSantuario = Endereco::where('logradouro', 'Rua do Santuário')->first();
-        $ruaManoel    = Endereco::where('logradouro', 'Rua Manoel Gonçalves de Castro')->first();
-        $ruaRaimundo  = Endereco::where('logradouro', 'Rua Raimundo Cimini')->first();
-        $pracaCesario = Endereco::where('logradouro', 'Praça Cesário Alvim')->first();
+        $avOlegario       = Endereco::where('logradouro', 'Av. Olegário Maciel')->first();
+        $avCatarina       = Endereco::where('logradouro', 'Av. Catarina Cimini')->first();
+        $avAnaPena        = Endereco::where('logradouro', 'Av. Ana Pena de Faria')->first();
+        $ruaSantuario     = Endereco::where('logradouro', 'Rua do Santuário')->first();
+        $ruaManoel        = Endereco::where('logradouro', 'Rua Manoel Gonçalves de Castro')->first();
+        $ruaRaimundo      = Endereco::where('logradouro', 'Rua Raimundo Cimini')->first();
+        $pracaCesario     = Endereco::where('logradouro', 'Praça Cesário Alvim')->first();
+        $avMoacir         = Endereco::where('logradouro', 'Av. Moacir de Matos')->first();
+        $avJoaoCaetano    = Endereco::where('logradouro', 'Av. João Caetano do Nascimento')->first();
+        $ruaCoronelPedro  = Endereco::where('logradouro', 'Rua Coronel Pedro Martins')->first();
+        $ruaDonaZeca      = Endereco::where('logradouro', 'Rua Dona Zeca Chagas')->first();
+        $ruaLuizAntonio   = Endereco::where('logradouro', 'Rua Luiz Antônio Cortes')->first();
 
         // ── Sensores ───────────────────────────────────────────────────────────
         $sensors = [
@@ -135,6 +145,46 @@ class AquaSenseSeeder extends Seeder
                 'endereco_id' => $pracaCesario?->id,
                 'latitude'    => -19.7904016,
                 'longitude'   => -42.1404759,
+            ],
+            [
+                'codigo'      => 'MOA-311',
+                'nome'        => 'Moacir de Matos 1',
+                'bairro_id'   => $centro?->id,
+                'endereco_id' => $avMoacir?->id,
+                'latitude'    => -19.7916632,
+                'longitude'   => -42.1388895,
+            ],
+            [
+                'codigo'      => 'RDN-001',
+                'nome'        => 'Rodoviária Nova 1',
+                'bairro_id'   => $centro?->id,
+                'endereco_id' => $avJoaoCaetano?->id,
+                'latitude'    => -19.7971463,
+                'longitude'   => -42.1382505,
+            ],
+            [
+                'codigo'      => 'RCR-001',
+                'nome'        => 'Rua do Correio',
+                'bairro_id'   => $centro?->id,
+                'endereco_id' => $ruaCoronelPedro?->id,
+                'latitude'    => -19.7892750,
+                'longitude'   => -42.1389432,
+            ],
+            [
+                'codigo'      => 'STZ-001',
+                'nome'        => 'Pé de Manga',
+                'bairro_id'   => $santaZita?->id,
+                'endereco_id' => $ruaDonaZeca?->id,
+                'latitude'    => -19.7890246,
+                'longitude'   => -42.1312802,
+            ],
+            [
+                'codigo'      => 'STZ-002',
+                'nome'        => 'Fórum',
+                'bairro_id'   => $santaZita?->id,
+                'endereco_id' => $ruaLuizAntonio?->id,
+                'latitude'    => -19.7894803,
+                'longitude'   => -42.1348427,
             ],
         ];
 
