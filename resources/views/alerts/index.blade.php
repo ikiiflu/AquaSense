@@ -43,7 +43,10 @@
                     <div class="empty-state-desc">Todos os sensores estão dentro dos parâmetros normais.</div>
                 </div>
             @else
-                @php $sevCores = ['atencao'=>'#F59E0B','risco'=>'#F97316','critico'=>'#EF4444']; @endphp
+                @php
+                    $sevCores  = ['atencao'=>'#F59E0B','risco'=>'#F97316','critico'=>'#EF4444'];
+                    $sevLabels = ['atencao'=>'Atenção','risco'=>'Risco','critico'=>'Crítico'];
+                @endphp
                 @foreach($activeAlerts as $bairroNome => $alerts)
                     <div style="padding:0.6rem 1.25rem 0.25rem">
                         <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-dim);padding-bottom:0.4rem;border-bottom:1px solid var(--line);margin-bottom:0.25rem">
@@ -67,7 +70,7 @@
                                     <div style="font-size:0.7rem;color:var(--ink-dim);opacity:0.6;margin-top:0.25rem">{{ $alert->created_at->format('d/m/Y H:i') }}</div>
                                 </div>
                                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem;flex-shrink:0;margin-left:0.75rem;padding-top:0.1rem">
-                                    <span style="{{ $sevBadgeCss }}">{{ ucfirst($alert->severidade) }}</span>
+                                    <span style="{{ $sevBadgeCss }}">{{ $sevLabels[$alert->severidade] ?? $alert->severidade }}</span>
                                     <form method="POST" action="{{ route('alerts.resolve', $alert) }}" style="margin:0">
                                         @csrf
                                         <button type="submit" style="padding:0.2rem 0.5rem;font-size:0.65rem;font-weight:600;border-radius:4px;border:1px solid var(--status-ok);color:var(--status-ok);cursor:pointer;font-family:var(--font-body);white-space:nowrap;background:transparent">

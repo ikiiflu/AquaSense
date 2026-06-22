@@ -10,7 +10,7 @@ class HistoryController extends Controller
 {
     public function index(Request $request)
     {
-        $sensors  = Sensor::where('ativo', true)->orderBy('codigo')->get(['id', 'codigo', 'nome']);
+        $sensors  = Sensor::where('ativo', true)->orderBy('id')->get(['id', 'codigo', 'nome']);
         $selected = $request->integer('sensor_id') ?: ($sensors->first()?->id);
 
         $readings = SensorReading::where('sensor_id', $selected)

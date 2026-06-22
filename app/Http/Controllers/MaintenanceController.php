@@ -13,7 +13,7 @@ class MaintenanceController extends Controller
             ->orderByDesc('realizado_em')
             ->paginate(20);
 
-        $sensors = Sensor::where('ativo', true)->orderBy('codigo')->get(['id', 'codigo', 'nome']);
+        $sensors = Sensor::where('ativo', true)->orderBy('id')->get(['id', 'codigo', 'nome']);
 
         return view('maintenance.index', compact('records', 'sensors'));
     }

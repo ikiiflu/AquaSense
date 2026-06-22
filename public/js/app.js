@@ -60,9 +60,9 @@
         var avgRain = readings.reduce(function (a, r) { return a + (r.precipitacao_mm  || 0); }, 0) / readings.length;
         var avgFlow = readings.reduce(function (a, r) { return a + (r.vazao_lps        || 0); }, 0) / readings.length;
 
-        if (metricObs)   metricObs.textContent   = Math.round(avgObs * 10) / 10;
-        if (metricChuva) metricChuva.textContent = avgRain.toFixed(1);
-        if (metricVazao) metricVazao.textContent = Math.round(avgFlow);
+        if (metricObs)   metricObs.innerHTML   = avgObs.toFixed(1)  + '<span style="font-size:1.4rem;opacity:0.7">%</span>';
+        if (metricChuva) metricChuva.innerHTML = avgRain.toFixed(1) + '<span style="font-size:1.4rem;opacity:0.7"> mm</span>';
+        if (metricVazao) metricVazao.innerHTML = avgFlow.toFixed(1) + '<span style="font-size:1.4rem;opacity:0.7"> L/s</span>';
 
         updateSidebarDots(sensors);
       })

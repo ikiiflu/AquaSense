@@ -20,8 +20,8 @@ return new class extends Migration
             $table->boolean('ativo')->default(true);
             $table->timestamps();
 
-            $table->foreign('endereco_id')->references('id')->on('enderecos')->nullOnDelete();
-            $table->foreign('bairro_id')->references('id')->on('bairros')->nullOnDelete();
+            $table->foreign('endereco_id')->references('id')->on('enderecos')->onDelete('cascade');
+            $table->foreign('bairro_id')->references('id')->on('bairros')->onDelete('cascade');
         });
 
         // ── leituras ──────────────────────────────────────────────────────────

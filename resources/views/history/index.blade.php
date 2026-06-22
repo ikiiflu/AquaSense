@@ -50,7 +50,10 @@
                 </tr>
             </thead>
             <tbody>
-                @php $stColors = ['ok'=>'#10B981','atencao'=>'#F59E0B','risco'=>'#F97316','critico'=>'#EF4444']; @endphp
+                @php
+                    $stColors = ['ok'=>'#10B981','atencao'=>'#F59E0B','risco'=>'#F97316','critico'=>'#EF4444'];
+                    $stLabels = ['ok'=>'Normal','atencao'=>'Atenção','risco'=>'Risco','critico'=>'Crítico'];
+                @endphp
                 @foreach($readings as $i => $r)
                     @php
                         $obs = $r->obstrucao_pct;
@@ -64,7 +67,7 @@
                         <td style="padding:0.45rem 0.75rem">{{ number_format($r->precipitacao_mm, 3) }}</td>
                         <td style="padding:0.45rem 0.75rem">{{ number_format($r->vazao_lps, 3) }}</td>
                         <td style="padding:0.45rem 0.75rem">
-                            <span style="color:{{ $cor }};font-weight:600">{{ ucfirst($st) }}</span>
+                            <span style="color:{{ $cor }};font-weight:600">{{ $stLabels[$st] ?? $st }}</span>
                         </td>
                     </tr>
                 @endforeach

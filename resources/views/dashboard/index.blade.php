@@ -84,7 +84,7 @@
         <div style="position:absolute;top:0;right:0;width:120px;height:120px;border-radius:50%;background:{{ $g }};transform:translate(30%,-30%);pointer-events:none"></div>
         <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-muted);font-weight:600;margin-bottom:0.75rem">Obstrução média</div>
         <div style="font-size:2.8rem;font-weight:700;font-family:var(--font-data);color:{{ $c }};line-height:1;margin-bottom:0.5rem" id="metric-obstruction">
-            {{ is_null($obs) ? '-' : $obs }}@if(!is_null($obs))<span style="font-size:1.4rem;opacity:0.7">%</span>@endif
+            {{ is_null($obs) ? '-' : number_format($obs, 1) }}@if(!is_null($obs))<span style="font-size:1.4rem;opacity:0.7">%</span>@endif
         </div>
         <div style="height:4px;background:var(--line);border-radius:2px;margin-bottom:0.75rem;overflow:hidden">
             <div style="height:100%;width:{{ min(100, $obs ?? 0) }}%;background:{{ $c }};border-radius:2px;transition:width 0.5s ease"></div>
@@ -101,7 +101,7 @@
         <div style="position:absolute;top:0;right:0;width:120px;height:120px;border-radius:50%;background:{{ $g }};transform:translate(30%,-30%);pointer-events:none"></div>
         <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-muted);font-weight:600;margin-bottom:0.75rem">Precipitação</div>
         <div style="font-size:2.8rem;font-weight:700;font-family:var(--font-data);color:{{ $c }};line-height:1;margin-bottom:0.5rem" id="metric-rainfall">
-            {{ is_null($rain) ? '-' : $rain }}@if(!is_null($rain))<span style="font-size:1.4rem;opacity:0.7"> mm</span>@endif
+            {{ is_null($rain) ? '-' : number_format($rain, 1) }}@if(!is_null($rain))<span style="font-size:1.4rem;opacity:0.7"> mm</span>@endif
         </div>
         <div style="height:4px;background:var(--line);border-radius:2px;margin-bottom:0.75rem;overflow:hidden">
             <div style="height:100%;width:{{ min(100, is_null($rain) ? 0 : min(100, ($rain/25)*100)) }}%;background:{{ $c }};border-radius:2px;transition:width 0.5s ease"></div>
@@ -118,7 +118,7 @@
         <div style="position:absolute;top:0;right:0;width:120px;height:120px;border-radius:50%;background:{{ $g }};transform:translate(30%,-30%);pointer-events:none"></div>
         <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-muted);font-weight:600;margin-bottom:0.75rem">Vazão média</div>
         <div style="font-size:2.8rem;font-weight:700;font-family:var(--font-data);color:{{ $c }};line-height:1;margin-bottom:0.5rem" id="metric-flow">
-            {{ is_null($flow) ? '-' : $flow }}@if(!is_null($flow))<span style="font-size:1.4rem;opacity:0.7"> L/s</span>@endif
+            {{ is_null($flow) ? '-' : number_format($flow, 1) }}@if(!is_null($flow))<span style="font-size:1.4rem;opacity:0.7"> L/s</span>@endif
         </div>
         <div style="height:4px;background:var(--line);border-radius:2px;margin-bottom:0.75rem;overflow:hidden">
             <div style="height:100%;width:{{ is_null($flow) ? 0 : min(100, ($flow/300)*100) }}%;background:{{ $c }};border-radius:2px;transition:width 0.5s ease"></div>
@@ -148,17 +148,18 @@
         <ul style="list-style:none;margin:0;padding:0;overflow-y:auto;flex:1" id="alert-list" role="log">
             @forelse($activeAlerts->take(12) as $alert)
                 @php
-                    $aSt  = $alert->severidade;
-                    $aCor = $statusColors[$aSt] ?? '#EF4444';
-                    $aGlow= $statusGlows[$aSt]  ?? 'rgba(239,68,68,0.1)';
-                    $aCss = 'font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:' . $aCor;
+                    $aSt    = $alert->severidade;
+                    $aCor   = $statusColors[$aSt] ?? '#EF4444';
+                    $aGlow  = $statusGlows[$aSt]  ?? 'rgba(239,68,68,0.1)';
+                    $aCss   = 'font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:' . $aCor;
+                    $aLabel = ['atencao'=>'Atenção','risco'=>'Risco','critico'=>'Crítico'][$aSt] ?? $aSt;
                 @endphp
                 <li style="display:flex;align-items:stretch;border-bottom:1px solid color-mix(in srgb,var(--line) 50%,transparent);padding:0.55rem 1.25rem 0.55rem 0">
                     <div style="width:3px;flex-shrink:0;border-radius:2px;margin-right:0.85rem;background:{{ $aCor }}"></div>
                     <div style="flex:1;min-width:0">
                         <div style="display:flex;align-items:baseline;gap:0.5rem">
                             <span style="font-size:0.8rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ $alert->sensor->nome ?? '-' }}</span>
-                            <span style="{{ $aCss }}">{{ ucfirst($aSt) }}</span>
+                            <span style="{{ $aCss }}">{{ $aLabel }}</span>
                         </div>
                         <div style="font-size:0.73rem;color:var(--ink-dim);margin-top:0.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ $alert->mensagem }}</div>
                     </div>

@@ -11,7 +11,7 @@ class MapController extends Controller
     {
         $sensors = Sensor::with(['ultimaLeitura', 'bairro'])
             ->where('ativo', true)
-            ->orderBy('codigo')
+            ->orderBy('id')
             ->get();
 
         $bairros     = Bairro::orderBy('nome')->get();

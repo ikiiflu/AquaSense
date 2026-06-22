@@ -11,7 +11,7 @@ class DashboardController extends Controller
     {
         $sensors = Sensor::with('ultimaLeitura')
             ->where('ativo', true)
-            ->orderBy('codigo')
+            ->orderBy('id')
             ->get();
 
         $activeAlerts = Alert::with('sensor:id,codigo,nome')
@@ -23,7 +23,7 @@ class DashboardController extends Controller
 
         $metrics = [
             'avg_obstruction' => $readings->isEmpty() ? null : round($readings->avg('obstrucao_pct'), 1),
-            'avg_rainfall'    => $readings->isEmpty() ? null : round($readings->avg('precipitacao_mm'), 2),
+            'avg_rainfall'    => $readings->isEmpty() ? null : round($readings->avg('precipitacao_mm'), 1),
             'avg_flow'        => $readings->isEmpty() ? null : round($readings->avg('vazao_lps'), 1),
             'sensors_count'   => $sensors->count(),
             'alerts_count'    => $activeAlerts->count(),

@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
 
         // ── View composers ──────────────────────────────────────────────────────
         View::composer('layout.sidebar', function ($view) {
-            $sensors    = Sensor::with(['ultimaLeitura', 'bairro', 'endereco'])->where('ativo', true)->orderBy('codigo')->get();
+            $sensors    = Sensor::with(['ultimaLeitura', 'bairro', 'endereco'])->where('ativo', true)->orderBy('id')->get();
             $alertCount = Alert::whereNull('resolvido_em')->count();
 
             $view->with('navSensors', $sensors)

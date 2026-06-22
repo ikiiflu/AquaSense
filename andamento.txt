@@ -86,8 +86,8 @@ Tabelas implementadas:
   log_consultas    – id, sql_query, bindings, tempo_ms, executado_em
   users            – tabela padrão Laravel
 
-Integridade referencial: FKs com nullOnDelete (enderecos→sensores),
-  CASCADE implícito nas exclusões de sensores (leituras, alertas).
+Integridade referencial: todas as FKs com ON DELETE CASCADE conforme Objetivo.md.
+  bairros/enderecos → sensores → leituras/alertas (cadeia completa de cascade).
 
 Normalização: as tabelas estão em 3FN.
   Endereco foi extraído de sensores.endereco (varchar) para a tabela enderecos
