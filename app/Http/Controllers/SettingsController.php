@@ -19,12 +19,11 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'intervalo_leitura_seg'    => 'required|integer|min:10|max:86400',
+            'modo_simulacao'           => 'required|in:sem_chuva,normal,chuva_fraca,chuva_forte,tempestade',
+            'intervalo_atualizacao_seg'=> 'required|integer|min:30|max:3600',
             'limite_atencao'           => 'required|integer|min:1|max:99',
             'limite_risco'             => 'required|integer|min:1|max:99',
             'limite_critico'           => 'required|integer|min:1|max:99',
-            'modo_simulacao'           => 'required|in:sem_chuva,normal,chuva_fraca,chuva_forte,tempestade',
-            'intervalo_atualizacao_seg'=> 'required|integer|min:30|max:3600',
         ]);
 
         foreach ($validated as $chave => $valor) {
