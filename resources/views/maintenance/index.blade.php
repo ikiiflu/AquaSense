@@ -1,6 +1,6 @@
 @extends('layout.body')
 
-@section('title', 'AquaSense — Manutenção')
+@section('title', 'AquaSense - Manutenção')
 
 @section('content')
 <div class="dash-header">
@@ -38,13 +38,13 @@
                         </td>
                         <td style="padding:0.5rem 0.75rem">
                             <span style="font-size:0.7rem;color:var(--flow);font-family:var(--font-mono)">
-                                {{ $r->sensor->codigo ?? '—' }}
+                                {{ $r->sensor->codigo ?? '-' }}
                             </span><br>
-                            <span>{{ $r->sensor->nome ?? '—' }}</span>
+                            <span>{{ $r->sensor->nome ?? '-' }}</span>
                         </td>
                         <td style="padding:0.5rem 0.75rem">{{ $r->operador }}</td>
                         <td style="padding:0.5rem 0.75rem">{{ $r->descricao }}</td>
-                        <td style="padding:0.5rem 0.75rem;color:var(--ink-dim)">{{ $r->observacoes ?? '—' }}</td>
+                        <td style="padding:0.5rem 0.75rem;color:var(--ink-dim)">{{ $r->observacoes ?? '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('log_consultas', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->text('sql_query');
             $table->json('bindings')->nullable();
             $table->float('tempo_ms')->default(0);

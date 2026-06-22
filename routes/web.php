@@ -9,6 +9,7 @@ use App\Http\Controllers\LogConsultaController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Api\BairroController;
+use App\Http\Controllers\Api\EnderecoController;
 use App\Http\Controllers\Api\ReadingGeneratorController;
 use App\Http\Controllers\Api\SensorController;
 use Illuminate\Support\Facades\Route;
@@ -24,7 +25,9 @@ Route::middleware('auth')->group(function () {
     // Pages
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/map',       [MapController::class,       'index'])->name('map.operational_map');
-    Route::get('/alerts',    [AlertsController::class,    'index'])->name('alerts.index');
+    Route::get('/alerts',           [AlertsController::class, 'index'])->name('alerts.index');
+    Route::post('/alerts/{alert}/resolve', [AlertsController::class, 'resolve'])->name('alerts.resolve');
+    Route::delete('/alerts/{alert}',       [AlertsController::class, 'destroy'])->name('alerts.destroy');
     Route::get('/history',   [HistoryController::class,   'index'])->name('history.index');
     Route::get('/charts',    [ChartsController::class,    'index'])->name('charts.index');
 
@@ -40,6 +43,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/sensors',           [SensorController::class, 'store']);
     Route::put('/api/sensors/{sensor}',   [SensorController::class, 'update']);
     Route::delete('/api/sensors/{sensor}',[SensorController::class, 'destroy']);
+
+    // Endereços CRUD
+    Route::get('/api/enderecos',              [EnderecoController::class, 'index']);
+    Route::post('/api/enderecos',             [EnderecoController::class, 'store']);
+    Route::put('/api/enderecos/{endereco}',   [EnderecoController::class, 'update']);
+    Route::delete('/api/enderecos/{endereco}',[EnderecoController::class, 'destroy']);
 
     // Bairros CRUD
     Route::get('/api/bairros',             [BairroController::class, 'index']);

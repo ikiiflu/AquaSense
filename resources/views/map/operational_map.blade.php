@@ -1,35 +1,31 @@
 @extends('layout.body')
 
-@section('title', 'AquaSense — Mapa Operacional')
+@section('title', 'AquaSense - Mapa Operacional')
 
 @section('content')
     <div class="map-section" style="height: calc(100vh - 120px); display: flex; flex-direction: column; position: relative;">
         <div class="map-overlay-top">
             <div class="map-pill" id="map-sensor-count" aria-label="Sensores no mapa">{{ $sensors->count() }} sensores</div>
             <div class="map-pill" id="map-time" aria-live="off">--:--</div>
-            <div class="map-pill" style="color:var(--flow);font-size:0.72rem">
-                Clique no mapa para adicionar um sensor
-            </div>
-            <button onclick="openBairrosModal()" class="map-pill" style="cursor:pointer;border:1px solid var(--line);background:var(--panel)">
-                Gerenciar Bairros
-            </button>
+            <div class="map-pill" style="color:var(--flow);font-size:0.72rem">Clique no mapa para adicionar um sensor</div>
+            <button onclick="openBairrosModal()" class="map-pill" style="cursor:pointer;border:1px solid var(--line);background:var(--panel)">Gerenciar Bairros</button>
+            <button onclick="openEnderecoModal()" class="map-pill" style="cursor:pointer;border:1px solid var(--line);background:var(--panel)">Gerenciar Endereços</button>
         </div>
         <div id="city-map" class="map-container" style="flex: 1; min-height: 100%;"></div>
     </div>
 
-    {{-- ══ Modal Sensor (add / edit) ══ --}}
+    {{-- Modal Sensor (add / edit) --}}
     <div id="sensor-modal" class="smodal-overlay">
         <div class="smodal-box">
             <div class="smodal-header">
                 <h2 id="modal-title" class="smodal-title">Adicionar sensor</h2>
                 <button onclick="closeSensorModal()" class="smodal-close">&times;</button>
             </div>
-
             <form id="sensor-form" onsubmit="submitSensorForm(event)">
                 <input type="hidden" id="sensor-id" value="">
 
                 <div class="smodal-field">
-                    <label class="smodal-label">Código <span class="smodal-required">*</span></label>
+                    <label class="smodal-label">Codigo <span class="smodal-required">*</span></label>
                     <input type="text" id="field-code" class="smodal-input" placeholder="Ex.: AQS-011" maxlength="20" required>
                     <div id="err-codigo" class="smodal-error"></div>
                 </div>
@@ -41,21 +37,27 @@
                 </div>
 
                 <div class="smodal-field">
-                    <label class="smodal-label">Endereço <span class="smodal-required">*</span></label>
-                    <input type="text" id="field-address" class="smodal-input" placeholder="Ex.: Av. Brasil, 100" maxlength="200" required>
-                    <div id="err-endereco" class="smodal-error"></div>
+                    <label class="smodal-label">Endereco <span class="smodal-required">*</span></label>
+                    <div style="display:flex;gap:0.5rem;align-items:center">
+                        <select id="field-endereco-id" class="smodal-input" required style="flex:1">
+                            <option value="">Carregando...</option>
+                        </select>
+                        <button type="button" onclick="openEnderecoModal()"
+                                style="flex-shrink:0;padding:0.5rem 0.7rem;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);cursor:pointer;color:var(--ink-dim);font-size:0.82rem;font-family:var(--font-body);white-space:nowrap">
+                            + Novo
+                        </button>
+                    </div>
+                    <div id="err-endereco_id" class="smodal-error"></div>
                 </div>
 
                 <div class="smodal-field">
                     <label class="smodal-label">Bairro <span class="smodal-required">*</span></label>
                     <div style="display:flex;gap:0.5rem;align-items:center">
                         <select id="field-bairro-id" class="smodal-input" required style="flex:1">
-                            <option value="">Carregando…</option>
+                            <option value="">Carregando...</option>
                         </select>
                         <button type="button" onclick="openBairrosModal()"
-                                style="flex-shrink:0;padding:0.5rem 0.7rem;background:var(--panel);border:1px solid var(--line);
-                                       border-radius:var(--radius-md);cursor:pointer;color:var(--ink-dim);font-size:0.82rem;
-                                       font-family:var(--font-body);white-space:nowrap">
+                                style="flex-shrink:0;padding:0.5rem 0.7rem;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);cursor:pointer;color:var(--ink-dim);font-size:0.82rem;font-family:var(--font-body);white-space:nowrap">
                             + Novo
                         </button>
                     </div>
@@ -80,15 +82,44 @@
                 <div class="smodal-actions">
                     <button type="submit" class="smodal-btn-primary" id="modal-submit-btn">Salvar sensor</button>
                     <button type="button" onclick="closeSensorModal()" class="smodal-btn-secondary">Cancelar</button>
-                    <button type="button" id="modal-delete-btn" onclick="deleteSensor()" class="smodal-btn-danger smodal-btn-danger--end" style="display:none">
-                        Excluir
-                    </button>
+                    <button type="button" id="modal-delete-btn" onclick="deleteSensor()" class="smodal-btn-danger smodal-btn-danger--end" style="display:none">Excluir</button>
                 </div>
             </form>
         </div>
     </div>
 
-    {{-- ══ Modal Bairros (CRUD) ══ --}}
+    {{-- Modal Endereços (CRUD) --}}
+    <div id="enderecos-modal" class="smodal-overlay">
+        <div class="smodal-box" style="width:460px">
+            <div class="smodal-header">
+                <h2 class="smodal-title">Gerenciar Endereços</h2>
+                <button onclick="closeEnderecoModal()" class="smodal-close">&times;</button>
+            </div>
+
+            <div style="margin-bottom:1rem">
+                <label class="smodal-label" id="end-form-label">Novo endereço</label>
+                <div style="display:flex;gap:0.5rem;align-items:flex-start">
+                    <div style="flex:1">
+                        <input type="text" id="field-end-logradouro" class="smodal-input" placeholder="Nome da rua (ex: Av. Brasil)">
+                        <div id="err-end" class="smodal-error"></div>
+                    </div>
+                    <div style="display:flex;gap:0.4rem;flex-shrink:0">
+                        <button type="button" onclick="saveEndereco()" class="smodal-btn-primary" style="padding:0.5rem 1rem">Salvar</button>
+                        <button type="button" id="end-cancel-edit" onclick="cancelEnderecoEdit()" class="smodal-btn-secondary" style="display:none;padding:0.5rem 0.75rem">x</button>
+                    </div>
+                </div>
+                <input type="hidden" id="end-edit-id" value="">
+            </div>
+
+            <div style="border-top:1px solid var(--line);padding-top:0.75rem">
+                <div id="enderecos-list" style="display:flex;flex-direction:column;gap:0.35rem;max-height:280px;overflow-y:auto">
+                    <div style="color:var(--ink-dim);font-size:0.8rem;text-align:center;padding:1rem">Carregando...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal Bairros (CRUD) --}}
     <div id="bairros-modal" class="smodal-overlay">
         <div class="smodal-box" style="width:440px">
             <div class="smodal-header">
@@ -96,7 +127,6 @@
                 <button onclick="closeBairrosModal()" class="smodal-close">&times;</button>
             </div>
 
-            {{-- Add / edit form --}}
             <div style="margin-bottom:1rem">
                 <label class="smodal-label" id="bairro-form-label">Novo bairro</label>
                 <div style="display:flex;gap:0.5rem;align-items:flex-start">
@@ -105,22 +135,16 @@
                         <div id="err-bairro-nome" class="smodal-error"></div>
                     </div>
                     <div style="display:flex;gap:0.4rem;flex-shrink:0">
-                        <button type="button" onclick="saveBairro()" class="smodal-btn-primary" style="padding:0.5rem 1rem">
-                            Salvar
-                        </button>
-                        <button type="button" id="bairro-cancel-edit" onclick="cancelBairroEdit()"
-                                class="smodal-btn-secondary" style="display:none;padding:0.5rem 0.75rem">
-                            ✕
-                        </button>
+                        <button type="button" onclick="saveBairro()" class="smodal-btn-primary" style="padding:0.5rem 1rem">Salvar</button>
+                        <button type="button" id="bairro-cancel-edit" onclick="cancelBairroEdit()" class="smodal-btn-secondary" style="display:none;padding:0.5rem 0.75rem">x</button>
                     </div>
                 </div>
                 <input type="hidden" id="bairro-edit-id" value="">
             </div>
 
-            {{-- List --}}
             <div style="border-top:1px solid var(--line);padding-top:0.75rem">
                 <div id="bairros-list" style="display:flex;flex-direction:column;gap:0.35rem;max-height:280px;overflow-y:auto">
-                    <div style="color:var(--ink-dim);font-size:0.8rem;text-align:center;padding:1rem">Carregando…</div>
+                    <div style="color:var(--ink-dim);font-size:0.8rem;text-align:center;padding:1rem">Carregando...</div>
                 </div>
             </div>
         </div>
@@ -150,10 +174,8 @@
 .smodal-btn-danger       { padding:0.55rem 1.25rem;background:transparent;color:var(--status-critico);font-size:0.85rem;border:1px solid var(--status-critico);border-radius:var(--radius-md);cursor:pointer;font-family:var(--font-body); }
 .smodal-btn-danger:hover       { background:var(--status-critico-dim); }
 .smodal-btn-danger--end  { margin-left:auto; }
-
 .map-dot { width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.5);box-shadow:0 0 6px rgba(0,0,0,0.5);cursor:pointer;transition:transform 0.15s; }
 .map-dot:hover { transform:scale(1.4); }
-
 .bairro-item { display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.6rem;border-radius:6px;background:var(--void);border:1px solid var(--line); }
 .bairro-item-nome { flex:1;font-size:0.88rem;color:var(--ink); }
 .bairro-btn { padding:0.2rem 0.55rem;font-size:0.72rem;border-radius:4px;border:1px solid var(--line);cursor:pointer;background:transparent;color:var(--ink-dim);font-family:var(--font-body); }
@@ -165,7 +187,8 @@
 @push('scripts')
 <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
-<script>window.AQUASENSE_SENSORS = {!! $sensorsJson !!};</script>
+<script type="application/json" id="aquasense-sensors-data">{!! $sensorsJson !!}</script>
+<script>window.AQUASENSE_SENSORS = JSON.parse(document.getElementById('aquasense-sensors-data').textContent);</script>
 <script>
 (function () {
     'use strict';
@@ -174,16 +197,16 @@
     var STATUS_COLORS = { ok: '#00D4AA', atencao: '#F59E0B', risco: '#F97316', critico: '#EF4444' };
 
     var map;
-    var markersMap  = {};
-    var sensors     = window.AQUASENSE_SENSORS || [];
-    var bairrosList = [];
+    var markersMap    = {};
+    var sensors       = window.AQUASENSE_SENSORS || [];
+    var bairrosList   = [];
+    var enderecosList = [];
 
-    // ── Utilitário ───────────────────────────────────────────────
     function escHtml(s) {
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    // ── Map time pill ─────────────────────────────────────────────
+    // Relogio do mapa
     function tickMapTime() {
         var el = document.getElementById('map-time');
         if (el) el.textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -191,7 +214,7 @@
     }
     tickMapTime();
 
-    // ── Marcadores ───────────────────────────────────────────────
+    // Marcadores
     function buildDot(status) {
         var el = document.createElement('div');
         el.className = 'map-dot';
@@ -201,8 +224,9 @@
 
     function addMarker(s) {
         if (markersMap[s.id]) markersMap[s.id].marker.remove();
+        var endDisplay = s.endereco ? s.endereco.logradouro : '';
         var dot = buildDot(s.status);
-        dot.title = s.nome + (s.bairro ? ' — ' + s.bairro : '');
+        dot.title = s.nome + (s.bairro ? ' - ' + s.bairro : '') + (endDisplay ? ' - ' + endDisplay : '');
         dot.addEventListener('click', function (e) { e.stopPropagation(); openEditModal(s); });
         var marker = new maplibregl.Marker({ element: dot, anchor: 'center' })
             .setLngLat([s.lng || s.longitude, s.lat || s.latitude])
@@ -219,7 +243,7 @@
         if (el) el.textContent = Object.keys(markersMap).length + ' sensores';
     }
 
-    // ── Mapa ──────────────────────────────────────────────────────
+    // Mapa
     map = new maplibregl.Map({
         container: 'city-map',
         style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
@@ -244,7 +268,130 @@
         });
     });
 
-    // ── Bairros: busca sempre fresca da API ───────────────────────
+    // ── Enderecos ─────────────────────────────────────────────────────────────
+    function loadEnderecos(callback) {
+        fetch('/api/enderecos', { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN } })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            enderecosList = data.data || [];
+            if (callback) callback();
+        })
+        .catch(function () { if (callback) callback(); });
+    }
+
+    function populateEnderecoSelect(selectedId) {
+        var sel = document.getElementById('field-endereco-id');
+        sel.innerHTML = '<option value="">Selecione o endereço...</option>';
+        enderecosList.forEach(function (e) {
+            var opt = document.createElement('option');
+            opt.value = e.id;
+            opt.textContent = e.logradouro;
+            if (selectedId && Number(e.id) === Number(selectedId)) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    }
+
+    var enderecoModal = document.getElementById('enderecos-modal');
+
+    function renderEnderecosList() {
+        var container = document.getElementById('enderecos-list');
+        if (!enderecosList.length) {
+            container.innerHTML = '<div style="color:var(--ink-dim);font-size:0.8rem;text-align:center;padding:1rem">Nenhum endereço cadastrado</div>';
+            return;
+        }
+        container.innerHTML = '';
+        enderecosList.forEach(function (e) {
+            var div = document.createElement('div');
+            div.className = 'bairro-item';
+            div.innerHTML =
+                '<span class="bairro-item-nome">' + escHtml(e.logradouro) + '</span>'
+                + '<button type="button" class="bairro-btn" data-id="' + e.id + '">Editar</button>'
+                + '<button type="button" class="bairro-btn bairro-btn-del" data-id="' + e.id + '">Excluir</button>';
+            container.appendChild(div);
+        });
+
+        container.querySelectorAll('.bairro-btn:not(.bairro-btn-del)').forEach(function (btn) {
+            btn.addEventListener('click', function () { editEndereco(btn.dataset.id); });
+        });
+        container.querySelectorAll('.bairro-btn-del').forEach(function (btn) {
+            btn.addEventListener('click', function () { deleteEndereco(btn.dataset.id); });
+        });
+    }
+
+    window.openEnderecoModal = function () {
+        cancelEnderecoEdit();
+        document.getElementById('err-end').textContent = '';
+        document.getElementById('enderecos-list').innerHTML = '<div style="color:var(--ink-dim);font-size:0.8rem;text-align:center;padding:1rem">Carregando...</div>';
+        enderecoModal.style.display = 'flex';
+        loadEnderecos(renderEnderecosList);
+    };
+
+    window.closeEnderecoModal = function () {
+        enderecoModal.style.display = 'none';
+        if (document.getElementById('sensor-modal').style.display === 'flex') {
+            populateEnderecoSelect(document.getElementById('field-endereco-id').value);
+        }
+    };
+
+    enderecoModal.addEventListener('click', function (e) { if (e.target === enderecoModal) closeEnderecoModal(); });
+
+    function editEndereco(id) {
+        var e = enderecosList.find(function (x) { return String(x.id) === String(id); });
+        if (!e) return;
+        document.getElementById('end-edit-id').value = e.id;
+        document.getElementById('field-end-logradouro').value   = e.logradouro || '';
+        document.getElementById('end-form-label').textContent   = 'Editar endereço';
+        document.getElementById('end-cancel-edit').style.display = 'inline-block';
+        document.getElementById('field-end-logradouro').focus();
+        document.getElementById('err-end').textContent = '';
+    }
+
+    window.cancelEnderecoEdit = function () {
+        document.getElementById('end-edit-id').value = '';
+        document.getElementById('field-end-logradouro').value   = '';
+        document.getElementById('end-form-label').textContent   = 'Novo endereço';
+        document.getElementById('end-cancel-edit').style.display = 'none';
+        document.getElementById('err-end').textContent = '';
+    };
+
+    window.saveEndereco = function () {
+        var id         = document.getElementById('end-edit-id').value;
+        var logradouro = document.getElementById('field-end-logradouro').value.trim();
+        document.getElementById('err-end').textContent = '';
+
+        if (!logradouro) { document.getElementById('err-end').textContent = 'Informe o nome da rua.'; return; }
+
+        fetch(id ? '/api/enderecos/' + id : '/api/enderecos', {
+            method: id ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
+            body: JSON.stringify({ logradouro: logradouro })
+        })
+        .then(function (r) { return r.json().then(function (b) { return { status: r.status, body: b }; }); })
+        .then(function (r) {
+            if (r.status === 422) {
+                var errs = r.body.errors || {};
+                var msg  = Object.values(errs).map(function (v) { return v[0]; }).join(' ');
+                document.getElementById('err-end').textContent = msg || 'Erro de validação.';
+                return;
+            }
+            if (r.status >= 400) { document.getElementById('err-end').textContent = r.body.message || 'Erro.'; return; }
+            cancelEnderecoEdit();
+            loadEnderecos(renderEnderecosList);
+        });
+    };
+
+    function deleteEndereco(id) {
+        if (!confirm('Excluir este endereço? Os sensores vinculados ficarão sem endereço.')) return;
+        fetch('/api/enderecos/' + id, {
+            method: 'DELETE',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN }
+        })
+        .then(function (r) {
+            if (r.status === 204) loadEnderecos(renderEnderecosList);
+        });
+    }
+
+    // ── Bairros ───────────────────────────────────────────────────────────────
     function loadBairros(callback) {
         fetch('/api/bairros', { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN } })
         .then(function (r) { return r.json(); })
@@ -257,7 +404,7 @@
 
     function populateBairroSelect(selectedId) {
         var sel = document.getElementById('field-bairro-id');
-        sel.innerHTML = '<option value="">Selecione o bairro…</option>';
+        sel.innerHTML = '<option value="">Selecione o bairro...</option>';
         bairrosList.forEach(function (b) {
             var opt = document.createElement('option');
             opt.value = b.id;
@@ -267,11 +414,11 @@
         });
     }
 
-    // ── Modal de sensor ───────────────────────────────────────────
+    // Modal de sensor
     var sensorModal = document.getElementById('sensor-modal');
 
     function clearSensorErrors() {
-        ['codigo','nome','endereco','bairro_id','latitude','longitude'].forEach(function (f) {
+        ['codigo','nome','endereco_id','bairro_id','latitude','longitude'].forEach(function (f) {
             var el = document.getElementById('err-' + f);
             if (el) el.textContent = '';
         });
@@ -284,15 +431,14 @@
         document.getElementById('sensor-id').value = '';
         document.getElementById('field-code').value = '';
         document.getElementById('field-name').value = '';
-        document.getElementById('field-address').value = '';
         document.getElementById('field-lat').value = lat ? lat.toFixed(7) : '';
         document.getElementById('field-lng').value = lng ? lng.toFixed(7) : '';
         document.getElementById('modal-delete-btn').style.display = 'none';
         document.getElementById('modal-submit-btn').textContent = 'Adicionar sensor';
-        loadBairros(function () {
-            populateBairroSelect(null);
-            sensorModal.style.display = 'flex';
-        });
+        var loaded = 0;
+        function onLoaded() { loaded++; if (loaded === 2) sensorModal.style.display = 'flex'; }
+        loadEnderecos(function () { populateEnderecoSelect(null); onLoaded(); });
+        loadBairros(function ()   { populateBairroSelect(null);   onLoaded(); });
     };
 
     window.openEditModal = function (s) {
@@ -301,32 +447,31 @@
         document.getElementById('sensor-id').value = s.id;
         document.getElementById('field-code').value = s.codigo || '';
         document.getElementById('field-name').value = s.nome   || '';
-        document.getElementById('field-address').value = s.endereco || '';
         document.getElementById('field-lat').value = (+(s.lat || s.latitude  || 0)).toFixed(7);
         document.getElementById('field-lng').value = (+(s.lng || s.longitude || 0)).toFixed(7);
         document.getElementById('modal-delete-btn').style.display = 'inline-block';
-        document.getElementById('modal-submit-btn').textContent = 'Salvar alterações';
-        loadBairros(function () {
-            populateBairroSelect(s.bairro_id);
-            sensorModal.style.display = 'flex';
-        });
+        document.getElementById('modal-submit-btn').textContent = 'Salvar alteracoes';
+        var loaded = 0;
+        function onLoaded() { loaded++; if (loaded === 2) sensorModal.style.display = 'flex'; }
+        loadEnderecos(function () { populateEnderecoSelect(s.endereco_id); onLoaded(); });
+        loadBairros(function ()   { populateBairroSelect(s.bairro_id);     onLoaded(); });
     };
 
     window.closeSensorModal = function () { sensorModal.style.display = 'none'; };
     sensorModal.addEventListener('click', function (e) { if (e.target === sensorModal) closeSensorModal(); });
 
-    // ── CRUD sensor ───────────────────────────────────────────────
+    // CRUD sensor
     window.submitSensorForm = function (e) {
         e.preventDefault();
         clearSensorErrors();
         var id      = document.getElementById('sensor-id').value;
         var payload = {
-            codigo:    document.getElementById('field-code').value.trim(),
-            nome:      document.getElementById('field-name').value.trim(),
-            endereco:  document.getElementById('field-address').value.trim(),
-            bairro_id: parseInt(document.getElementById('field-bairro-id').value) || null,
-            latitude:  parseFloat(document.getElementById('field-lat').value),
-            longitude: parseFloat(document.getElementById('field-lng').value),
+            codigo:      document.getElementById('field-code').value.trim(),
+            nome:        document.getElementById('field-name').value.trim(),
+            endereco_id: parseInt(document.getElementById('field-endereco-id').value) || null,
+            bairro_id:   parseInt(document.getElementById('field-bairro-id').value) || null,
+            latitude:    parseFloat(document.getElementById('field-lat').value),
+            longitude:   parseFloat(document.getElementById('field-lng').value),
         };
         fetch(id ? '/api/sensors/' + id : '/api/sensors', {
             method: id ? 'PUT' : 'POST',
@@ -348,12 +493,12 @@
             updateSensorCount();
             closeSensorModal();
         })
-        .catch(function () { document.getElementById('modal-error').textContent = 'Erro de comunicação.'; });
+        .catch(function () { document.getElementById('modal-error').textContent = 'Erro de comunicacao.'; });
     };
 
     window.deleteSensor = function () {
         var id = document.getElementById('sensor-id').value;
-        if (!id || !confirm('Excluir este sensor? Esta ação não pode ser desfeita.')) return;
+        if (!id || !confirm('Excluir este sensor? Esta acao nao pode ser desfeita.')) return;
         fetch('/api/sensors/' + id, {
             method: 'DELETE',
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN }
@@ -364,7 +509,7 @@
         });
     };
 
-    // ── Modal de bairros ─────────────────────────────────────────
+    // Modal de bairros
     var bairrosModal = document.getElementById('bairros-modal');
 
     function renderBairrosList() {
@@ -395,14 +540,13 @@
     window.openBairrosModal = function () {
         cancelBairroEdit();
         document.getElementById('err-bairro-nome').textContent = '';
-        document.getElementById('bairros-list').innerHTML = '<div style="color:var(--ink-dim);font-size:0.8rem;text-align:center;padding:1rem">Carregando…</div>';
+        document.getElementById('bairros-list').innerHTML = '<div style="color:var(--ink-dim);font-size:0.8rem;text-align:center;padding:1rem">Carregando...</div>';
         bairrosModal.style.display = 'flex';
         loadBairros(renderBairrosList);
     };
 
     window.closeBairrosModal = function () {
         bairrosModal.style.display = 'none';
-        // Atualiza o select do modal de sensor se estiver visível
         if (sensorModal.style.display === 'flex') {
             populateBairroSelect(document.getElementById('field-bairro-id').value);
         }
@@ -443,7 +587,7 @@
         .then(function (r) {
             if (r.status === 422) {
                 var errs = r.body.errors || {};
-                document.getElementById('err-bairro-nome').textContent = (errs.nome && errs.nome[0]) || 'Erro de validação.';
+                document.getElementById('err-bairro-nome').textContent = (errs.nome && errs.nome[0]) || 'Erro de validacao.';
                 return;
             }
             if (r.status >= 400) { document.getElementById('err-bairro-nome').textContent = r.body.message || 'Erro.'; return; }
@@ -453,7 +597,7 @@
     };
 
     function deleteBairro(id) {
-        if (!confirm('Excluir este bairro? Os sensores vinculados ficarão sem bairro.')) return;
+        if (!confirm('Excluir este bairro? Os sensores vinculados ficarao sem bairro.')) return;
         fetch('/api/bairros/' + id, {
             method: 'DELETE',
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN }
@@ -463,7 +607,8 @@
         });
     }
 
-    // Pré-carrega bairros para o select (silencioso, sem abrir modal)
+    // Pre-carrega listas silenciosamente
+    loadEnderecos(function () {});
     loadBairros(function () {});
 
 })();

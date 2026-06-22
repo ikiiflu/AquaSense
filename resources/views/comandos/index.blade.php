@@ -1,6 +1,6 @@
 @extends('layout.body')
 
-@section('title', 'AquaSense — Últimos Comandos')
+@section('title', 'AquaSense - Últimos Comandos')
 
 @section('content')
 <div class="dash-header">
@@ -43,14 +43,11 @@
             <tbody>
                 @foreach($logs as $log)
                     @php
-                        $sql = $log->sql_query;
-                        $op  = strtoupper(substr(ltrim($sql), 0, 6));
-                        $opColor = match($op) {
-                            'INSERT' => 'var(--status-ok)',
-                            'UPDATE' => 'var(--status-atencao)',
-                            'DELETE' => 'var(--status-critico)',
-                            default  => 'var(--ink-dim)',
-                        };
+                        $sql     = $log->sql_query;
+                        $op      = strtoupper(substr(ltrim($sql), 0, 6));
+                        $opCores = ['INSERT'=>'#00D4AA','UPDATE'=>'#F59E0B','DELETE'=>'#EF4444'];
+                        $opCor   = $opCores[$op] ?? '#94a3b8';
+                        $opCss   = 'font-weight:700;color:' . $opCor;
                     @endphp
                     <tr style="border-bottom:1px solid color-mix(in srgb,var(--line) 40%,transparent);vertical-align:top">
                         <td style="padding:0.45rem 0.75rem;color:var(--ink-dim);white-space:nowrap">
@@ -61,13 +58,13 @@
                             {{ number_format($log->tempo_ms, 1) }}
                         </td>
                         <td style="padding:0.45rem 0.75rem;max-width:520px">
-                            <span style="font-weight:700;color:{{ $opColor }}">{{ $op }}</span><span style="color:var(--ink-dim)">{{ substr($sql, 6) }}</span>
+                            <span style="{{ $opCss }}">{{ $op }}</span><span style="color:var(--ink-dim)">{{ substr($sql, 6) }}</span>
                         </td>
                         <td style="padding:0.45rem 0.75rem;color:var(--ink-dim);max-width:200px;word-break:break-all">
                             @if($log->bindings)
                                 {{ implode(', ', array_map(fn($b) => is_null($b) ? 'NULL' : $b, $log->bindings)) }}
                             @else
-                                —
+                                -
                             @endif
                         </td>
                     </tr>

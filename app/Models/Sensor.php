@@ -12,7 +12,7 @@ class Sensor extends Model
     protected $table = 'sensores';
 
     protected $fillable = [
-        'codigo', 'nome', 'endereco', 'bairro_id', 'latitude', 'longitude', 'ativo',
+        'codigo', 'nome', 'endereco_id', 'bairro_id', 'latitude', 'longitude', 'ativo',
     ];
 
     protected $casts = [
@@ -20,6 +20,11 @@ class Sensor extends Model
         'longitude' => 'float',
         'ativo'     => 'boolean',
     ];
+
+    public function endereco(): BelongsTo
+    {
+        return $this->belongsTo(Endereco::class, 'endereco_id');
+    }
 
     public function bairro(): BelongsTo
     {
@@ -61,11 +66,6 @@ class Sensor extends Model
     public function alertasAtivos(): HasMany
     {
         return $this->hasMany(Alert::class)->whereNull('resolvido_em');
-    }
-
-    public function manutencoes(): HasMany
-    {
-        return $this->hasMany(MaintenanceRecord::class);
     }
 
     private static ?array $limiares = null;

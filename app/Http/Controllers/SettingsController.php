@@ -19,10 +19,13 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'intervalo_leitura_seg' => 'required|integer|min:10|max:86400',
-            'limite_atencao'        => 'required|integer|min:1|max:99',
-            'limite_risco'          => 'required|integer|min:1|max:99',
-            'limite_critico'        => 'required|integer|min:1|max:99',
+            'intervalo_leitura_seg'    => 'required|integer|min:10|max:86400',
+            'limite_atencao'           => 'required|integer|min:1|max:99',
+            'limite_risco'             => 'required|integer|min:1|max:99',
+            'limite_critico'           => 'required|integer|min:1|max:99',
+            'modo_simulacao'           => 'required|in:sem_chuva,normal,chuva_fraca,chuva_forte,tempestade',
+            'modo_atualizacao'         => 'required|in:manual,automatico',
+            'intervalo_atualizacao_seg'=> 'required|integer|min:30|max:3600',
         ]);
 
         foreach ($validated as $chave => $valor) {
@@ -38,7 +41,7 @@ class SettingsController extends Controller
         try {
             Schema::disableForeignKeyConstraints();
 
-            foreach (['leituras', 'alertas', 'manutencoes', 'log_consultas'] as $table) {
+            foreach (['leituras', 'alertas', 'log_consultas'] as $table) {
                 DB::statement("TRUNCATE TABLE `{$table}`");
             }
 

@@ -8,14 +8,14 @@
         <div class="statusbar-divider" aria-hidden="true"></div>
         <div class="statusbar-item">
             <span class="statusbar-label">Sensores online</span>
-            <span class="statusbar-value">{{ $footerActiveSensors ?? '—' }}/{{ $footerTotalSensors ?? '—' }}</span>
+            <span class="statusbar-value">{{ $footerActiveSensors ?? '-' }}/{{ $footerTotalSensors ?? '-' }}</span>
         </div>
         <div class="statusbar-divider" aria-hidden="true"></div>
         <div class="statusbar-item">
-            <span class="statusbar-label">Última sincronização</span>
+            <span class="statusbar-label">Última sinc.</span>
             <span class="statusbar-value">
-                @if(!empty($footerLastSync))
-                    {{ \Carbon\Carbon::parse($footerLastSync)->diffForHumans() }}
+                @if($footerLastSync)
+                    {{ $footerLastSync->diffForHumans() }}
                 @else
                     Sem dados
                 @endif
@@ -23,6 +23,13 @@
         </div>
     </div>
     <div class="statusbar-right">
+        @if(\App\Models\Setting::get('modo_atualizacao', 'manual') === 'automatico')
+        <div class="statusbar-item">
+            <span class="statusbar-label">Próx. atualização</span>
+            <span class="statusbar-value" id="next-refresh-countdown" style="color:var(--flow)">--</span>
+        </div>
+        <div class="statusbar-divider" aria-hidden="true"></div>
+        @endif
         <div class="statusbar-item">
             <span class="statusbar-label">Hora local</span>
             <span class="statusbar-value" id="statusbar-clock">--:--</span>

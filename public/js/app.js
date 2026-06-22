@@ -1,21 +1,23 @@
 /**
- * AquaSense — Dashboard Script
- * Responsável por: relógio, sparklines, métricas (/api/sensors),
- * atualização dos status dots da sidebar e geração automática de leituras.
- *
- * O mapa é inicializado diretamente no view map/operational_map.blade.php.
+ * AquaSense - Dashboard Script
+ * Responsavel por: relogio, metricas (/api/sensors), dots da sidebar,
+ * geracao automatica de leituras e recarga automatica da pagina.
  */
 
 (function () {
   "use strict";
 
-  // Intervalo de leitura (segundos) lido do meta tag injetado pelo Blade
-  var intervalMeta = document.querySelector('meta[name="reading-interval"]');
-  var READING_INTERVAL_MS = intervalMeta ? (parseInt(intervalMeta.content, 10) * 1000) : 60000;
+  var metaGet = function (name, fallback) {
+    var el = document.querySelector('meta[name="' + name + '"]');
+    return el ? el.content : fallback;
+  };
 
-  var CSRF_TOKEN = (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
+  var CSRF_TOKEN          = metaGet("csrf-token", "");
+  var READING_INTERVAL_MS = parseInt(metaGet("reading-interval", "60"), 10) * 1000;
+  var REFRESH_MODE        = metaGet("refresh-mode", "manual");
+  var REFRESH_INTERVAL_MS = parseInt(metaGet("refresh-interval", "60"), 10) * 1000;
 
-  // ---- Clock ----
+  // ---- Relogio ----
   var clockEl = document.getElementById("statusbar-clock");
   function tickClock() {
     if (!clockEl) return;
@@ -24,22 +26,7 @@
     });
   }
 
-  // ---- Sparklines (decorativo) ----
-  function renderSparklines() {
-    document.querySelectorAll(".metric-card-spark").forEach(function (el) {
-      el.innerHTML = "";
-      for (var i = 0; i < 24; i++) {
-        var bar = document.createElement("div");
-        bar.className = "metric-card-spark-bar";
-        var h = 30 + Math.random() * 70;
-        bar.style.height = h + "%";
-        if (h > 75) bar.classList.add("is-high");
-        el.appendChild(bar);
-      }
-    });
-  }
-
-  // ---- Geração automática de leituras ----
+  // ---- Geracao automatica de leituras ----
   function autoGerar() {
     fetch("/api/leituras/gerar", {
       method: "POST",
@@ -50,15 +37,11 @@
       }
     })
       .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (data.inseridas > 0) {
-          fetchMetrics();
-        }
-      })
+      .then(function (data) { if (data.inseridas > 0) fetchMetrics(); })
       .catch(function (err) { console.warn("AquaSense: erro ao gerar leituras:", err); });
   }
 
-  // ---- Fetch sensors e atualiza cards de métricas ----
+  // ---- Fetch sensores e atualiza cards ----
   var metricObs   = document.getElementById("metric-obstruction");
   var metricChuva = document.getElementById("metric-rainfall");
   var metricVazao = document.getElementById("metric-flow");
@@ -77,47 +60,89 @@
         var avgRain = readings.reduce(function (a, r) { return a + (r.precipitacao_mm  || 0); }, 0) / readings.length;
         var avgFlow = readings.reduce(function (a, r) { return a + (r.vazao_lps        || 0); }, 0) / readings.length;
 
-        if (metricObs) {
-          metricObs.innerHTML = Math.round(avgObs) + '%<span class="unit">obstrução</span>';
-        }
-        if (metricChuva) {
-          metricChuva.innerHTML = avgRain.toFixed(1) + '<span class="unit">mm</span>';
-        }
-        if (metricVazao) {
-          metricVazao.innerHTML = Math.round(avgFlow) + '<span class="unit">L/s</span>';
-        }
+        if (metricObs)   metricObs.textContent   = Math.round(avgObs * 10) / 10;
+        if (metricChuva) metricChuva.textContent = avgRain.toFixed(1);
+        if (metricVazao) metricVazao.textContent = Math.round(avgFlow);
 
         updateSidebarDots(sensors);
       })
-      .catch(function (err) { console.warn("AquaSense: erro ao buscar métricas:", err); });
+      .catch(function (err) { console.warn("AquaSense: erro ao buscar metricas:", err); });
   }
 
   // ---- Atualiza dots de status da sidebar ----
   function updateSidebarDots(sensors) {
     var byId = {};
     sensors.forEach(function (s) { byId[s.id] = s.status; });
-
     document.querySelectorAll(".js-sensor-item").forEach(function (item) {
       var id  = item.dataset.sensorId;
       var dot = item.querySelector(".sensor-dot");
-      if (dot && byId[id]) {
-        dot.className = "sensor-dot status-" + byId[id];
-      }
+      if (dot && byId[id]) dot.className = "sensor-dot status-" + byId[id];
     });
   }
 
-  // ---- Sidebar: click para marcar selecionado ----
+  // ---- Sidebar: selecao ----
   document.querySelectorAll(".js-sensor-item").forEach(function (item) {
     item.addEventListener("click", function () {
-      document.querySelectorAll(".js-sensor-item").forEach(function (i) {
-        i.classList.remove("is-selected");
-      });
+      document.querySelectorAll(".js-sensor-item").forEach(function (i) { i.classList.remove("is-selected"); });
       item.classList.add("is-selected");
     });
   });
 
+  // ---- Recarga automática global (timer persiste entre navegações via localStorage) ----
+  var isMapPage = window.location.pathname === "/map";
+
+  if (!isMapPage && REFRESH_MODE === "automatico" && REFRESH_INTERVAL_MS >= 5000) {
+
+    var countdownEl = document.getElementById("next-refresh-countdown");
+    var STORAGE_KEY = "aquasense_next_refresh";
+
+    // Lê quando a próxima atualização está agendada; se não existir ou já passou,
+    // agenda a partir de agora (primeiro ciclo após configurar a função).
+    var now       = Date.now();
+    var nextAt    = parseInt(localStorage.getItem(STORAGE_KEY) || "0", 10);
+    if (nextAt <= now) {
+      nextAt = now + REFRESH_INTERVAL_MS;
+      localStorage.setItem(STORAGE_KEY, nextAt);
+    }
+
+    function doRefresh() {
+      // Agenda já o próximo ciclo antes de recarregar para que a próxima página
+      // leia o valor correto no localStorage.
+      localStorage.setItem(STORAGE_KEY, Date.now() + REFRESH_INTERVAL_MS);
+
+      var controller = new AbortController();
+      var fallback   = setTimeout(function () {
+        controller.abort();
+        location.reload();
+      }, 8000);
+
+      fetch("/api/leituras/gerar?force=1", {
+        method:  "POST",
+        headers: { "X-CSRF-TOKEN": CSRF_TOKEN, "Accept": "application/json" },
+        signal:  controller.signal
+      }).finally(function () {
+        clearTimeout(fallback);
+        location.reload();
+      });
+    }
+
+    // Tick a cada segundo: atualiza contador e dispara quando chegar a hora
+    setInterval(function () {
+      var remaining = Math.max(0, Math.round((nextAt - Date.now()) / 1000));
+      if (countdownEl) countdownEl.textContent = remaining + "s";
+      if (Date.now() >= nextAt) {
+        nextAt = Infinity; // evita disparos duplos enquanto o fetch corre
+        doRefresh();
+      }
+    }, 1000);
+
+    // Exibe valor inicial imediatamente
+    if (countdownEl) {
+      countdownEl.textContent = Math.max(0, Math.round((nextAt - now) / 1000)) + "s";
+    }
+  }
+
   // ---- Init ----
-  renderSparklines();
   tickClock();
   fetchMetrics();
   autoGerar();

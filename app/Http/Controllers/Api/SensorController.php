@@ -11,7 +11,7 @@ class SensorController extends Controller
 {
     public function index(): JsonResponse
     {
-        $sensors = Sensor::with(['ultimaLeitura', 'bairro'])
+        $sensors = Sensor::with(['ultimaLeitura', 'bairro', 'endereco'])
             ->where('ativo', true)
             ->orderBy('codigo')
             ->get()
@@ -22,7 +22,7 @@ class SensorController extends Controller
 
     public function show(Sensor $sensor): JsonResponse
     {
-        $sensor->load(['ultimaLeitura', 'bairro']);
+        $sensor->load(['ultimaLeitura', 'bairro', 'endereco']);
         return response()->json(['data' => $this->format($sensor)]);
     }
 
@@ -40,16 +40,16 @@ class SensorController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'codigo'    => 'required|string|max:20|unique:sensores,codigo',
-            'nome'      => 'required|string|max:100',
-            'endereco'  => 'required|string|max:200',
-            'bairro_id' => 'required|integer|exists:bairros,id',
-            'latitude'  => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
+            'codigo'      => 'required|string|max:20|unique:sensores,codigo',
+            'nome'        => 'required|string|max:100',
+            'endereco_id' => 'required|integer|exists:enderecos,id',
+            'bairro_id'   => 'required|integer|exists:bairros,id',
+            'latitude'    => 'required|numeric|between:-90,90',
+            'longitude'   => 'required|numeric|between:-180,180',
         ]);
 
         $sensor = Sensor::create(array_merge($validated, ['ativo' => true]));
-        $sensor->load(['ultimaLeitura', 'bairro']);
+        $sensor->load(['ultimaLeitura', 'bairro', 'endereco']);
 
         return response()->json(['data' => $this->format($sensor)], 201);
     }
@@ -57,17 +57,17 @@ class SensorController extends Controller
     public function update(Request $request, Sensor $sensor): JsonResponse
     {
         $validated = $request->validate([
-            'codigo'    => 'sometimes|string|max:20|unique:sensores,codigo,' . $sensor->id,
-            'nome'      => 'sometimes|string|max:100',
-            'endereco'  => 'sometimes|string|max:200',
-            'bairro_id' => 'sometimes|integer|exists:bairros,id',
-            'latitude'  => 'sometimes|numeric|between:-90,90',
-            'longitude' => 'sometimes|numeric|between:-180,180',
-            'ativo'     => 'sometimes|boolean',
+            'codigo'      => 'sometimes|string|max:20|unique:sensores,codigo,' . $sensor->id,
+            'nome'        => 'sometimes|string|max:100',
+            'endereco_id' => 'sometimes|integer|exists:enderecos,id',
+            'bairro_id'   => 'sometimes|integer|exists:bairros,id',
+            'latitude'    => 'sometimes|numeric|between:-90,90',
+            'longitude'   => 'sometimes|numeric|between:-180,180',
+            'ativo'       => 'sometimes|boolean',
         ]);
 
         $sensor->update($validated);
-        $sensor->load(['ultimaLeitura', 'bairro']);
+        $sensor->load(['ultimaLeitura', 'bairro', 'endereco']);
 
         return response()->json(['data' => $this->format($sensor)]);
     }
@@ -81,21 +81,23 @@ class SensorController extends Controller
     private function format(Sensor $sensor): array
     {
         $r = $sensor->ultimaLeitura;
+        $e = $sensor->endereco;
 
         return [
-            'id'        => $sensor->id,
-            'codigo'    => $sensor->codigo,
-            'nome'      => $sensor->nome,
-            'endereco'  => $sensor->endereco,
-            'bairro_id' => $sensor->bairro_id,
-            'bairro'    => $sensor->bairro?->nome,
-            'latitude'  => $sensor->latitude,
-            'longitude' => $sensor->longitude,
-            'ativo'     => $sensor->ativo,
-            'status'    => $sensor->status,
-            'lat'       => $sensor->latitude,
-            'lng'       => $sensor->longitude,
-            'reading'   => $r ? [
+            'id'          => $sensor->id,
+            'codigo'      => $sensor->codigo,
+            'nome'        => $sensor->nome,
+            'endereco_id' => $sensor->endereco_id,
+            'endereco'    => $e ? ['id' => $e->id, 'logradouro' => $e->logradouro] : null,
+            'bairro_id'   => $sensor->bairro_id,
+            'bairro'      => $sensor->bairro?->nome,
+            'latitude'    => $sensor->latitude,
+            'longitude'   => $sensor->longitude,
+            'ativo'       => $sensor->ativo,
+            'status'      => $sensor->status,
+            'lat'         => $sensor->latitude,
+            'lng'         => $sensor->longitude,
+            'reading'     => $r ? [
                 'obstrucao_pct'   => $r->obstrucao_pct,
                 'precipitacao_mm' => $r->precipitacao_mm,
                 'vazao_lps'       => $r->vazao_lps,

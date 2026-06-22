@@ -1,0 +1,103 @@
+ANDAMENTO DO PROJETO AquaSense
+Avaliação frente ao Objetivo.md
+Data: 22/06/2026
+========================================
+
+OBJETIVO GERAL
+--------------
+"Projetar, normalizar, implementar e consumir um banco de dados relacional
+ robusto. Criar um ecossistema completo que simula a ingestão de dados de
+ sensores urbanos e os expõe em um painel/dashboard analítico em tempo real."
+
+
+SITUAÇÃO POR FASE
+-----------------
+
+FASE 1 – Concepção                                          STATUS: PENDENTE
+---------------------------------------------------------------------------
+[ ] DER (Diagrama Entidade-Relacionamento) formal entregue
+[ ] Dicionário de dados completo (atributos, tipos, restrições)
+[ ] Validação formal das Formas Normais (1FN, 2FN, 3FN) documentada
+[ ] Expressões em Álgebra Relacional das consultas analíticas principais
+[ ] Scripts DDL (CREATE TABLE com tipos, PKs, FKs, constraints) testados
+
+O banco já está implementado e normalizado no código Laravel, mas os
+documentos formais da Fase 1 (DER em papel/ferramenta, dicionário de dados
+escrito, validação de FNs descrita, álgebra relacional) ainda não foram
+redigidos. Esse material é o que precisa ser produzido para entregar a Fase 1.
+
+
+FASE 2 – Integração                                         STATUS: COMPLETO
+---------------------------------------------------------------------------
+[X] Script backend simula inserção automática de leituras (SimulationService)
+    - Gera obstrucao_pct, precipitacao_mm, vazao_lps por sensor
+    - Respeita intervalo configurável (padrão 60 s)
+    - Modo de simulação: sem_chuva / normal / chuva_fraca / chuva_forte / tempestade
+    - Random walk contínuo com tendência proporcional ao clima configurado
+[X] Endpoint POST /api/leituras/gerar (ReadingGeneratorController)
+    - Suporta ?force=1 para geração imediata (ignora intervalo)
+[X] Endpoints de API para expor dados via JSON:
+    - GET  /api/sensors              (lista completa de sensores + última leitura)
+    - POST /api/sensors              (criar sensor)
+    - PUT  /api/sensors/{id}         (editar sensor)
+    - DELETE /api/sensors/{id}       (remover sensor)
+    - GET/POST/PUT/DELETE /api/bairros
+    - GET/POST/PUT/DELETE /api/enderecos
+[X] Geração e avaliação automática de alertas por limiar
+[X] Resolução manual (Dar baixa) e automática quando sensor volta ao OK
+Nota: tabela manutencoes removida — funcionalidade não implementada no sistema.
+
+
+FASE 3 – Dashboard                                          STATUS: COMPLETO
+---------------------------------------------------------------------------
+[X] Interface visual HTML/CSS/JS (Blade + CSS customizado sem framework)
+[X] Dashboard com cards de métricas em tempo real:
+    - Obstrução média da rede (%)
+    - Precipitação média (mm)
+    - Vazão média (L/s)
+[X] Feed de alertas críticos com scroll
+[X] Aba de Alertas: agrupamento por bairro, "Dar baixa" e "Excluir" manual
+[X] Gráficos analíticos (aba Gráficos):
+    - Barras de obstrução por sensor (0–100 %)
+    - Barras de vazão por sensor (relativo ao máximo)
+    - Barras de obstrução média por bairro (0–100 %)
+    - Tabela resumo por bairro (obstrução, precipitação, vazão)
+[X] Histórico de leituras filtrável por sensor
+[X] Mapa operacional com MapLibre GL JS (marcadores coloridos por status)
+[X] Gerenciamento de sensores, bairros e endereços via modais no mapa
+[X] Configurações do sistema (limiares, modo de simulação, intervalo de coleta,
+    atualização automática da página exceto na tela de mapa)
+[X] Registro de comandos SQL (INSERT/UPDATE/DELETE) com tempo de execução
+[X] Autenticação Laravel (login/logout)
+[X] Footer com status do sistema, sensores online e última sincronização
+
+
+BANCO DE DADOS – Conformidade técnica
+--------------------------------------
+Tabelas implementadas:
+  bairros          – id, nome
+  enderecos        – id, logradouro
+  sensores         – id, codigo, nome, endereco_id (FK), bairro_id (FK),
+                     latitude, longitude, ativo
+  leituras         – id, sensor_id (FK), obstrucao_pct, precipitacao_mm,
+                     vazao_lps, registrado_em
+  alertas          – id, sensor_id (FK), severidade, mensagem, resolvido_em
+  configuracoes    – id, chave, valor
+  log_consultas    – id, sql_query, bindings, tempo_ms, executado_em
+  users            – tabela padrão Laravel
+
+Integridade referencial: FKs com nullOnDelete (enderecos→sensores),
+  CASCADE implícito nas exclusões de sensores (leituras, alertas).
+
+Normalização: as tabelas estão em 3FN.
+  Endereco foi extraído de sensores.endereco (varchar) para a tabela enderecos
+  em sessão anterior, atendendo à 2FN.
+
+
+RESUMO EXECUTIVO
+----------------
+O sistema cumpre integralmente os objetivos das Fases 2 e 3 e excede o escopo
+mínimo em vários aspectos (mapa interativo, modos de clima, log SQL, interface
+completa sem frameworks CSS externos). O único item pendente de entrega formal
+é a documentação da Fase 1 (DER, dicionário, FNs, álgebra relacional e DDL
+para submissão), que deve ser produzida a partir do banco já existente.

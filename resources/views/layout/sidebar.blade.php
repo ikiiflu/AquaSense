@@ -93,14 +93,14 @@
                     <li class="sensor-list-item js-sensor-item"
                         tabindex="0"
                         role="option"
-                        aria-label="{{ $sensor->nome }} — {{ $sensor->endereco }}, status {{ $sensor->status }}"
+                        aria-label="{{ $sensor->nome }} - {{ $sensor->endereco instanceof \App\Models\Endereco ? $sensor->endereco->logradouro : '' }}, status {{ $sensor->status }}"
                         data-lat="{{ $sensor->latitude }}"
                         data-lng="{{ $sensor->longitude }}"
                         data-sensor-id="{{ $sensor->id }}">
                         <div class="sensor-dot status-{{ $sensor->status }}" aria-hidden="true"></div>
                         <div class="sensor-info">
                             <div class="sensor-name">{{ $sensor->nome }}</div>
-                            <div class="sensor-address">{{ $sensor->endereco }}</div>
+                            <div class="sensor-address">{{ $sensor->endereco instanceof \App\Models\Endereco ? $sensor->endereco->logradouro : '' }}</div>
                         </div>
                     </li>
                 @empty

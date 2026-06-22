@@ -15,8 +15,8 @@ class HistoryController extends Controller
 
         $readings = SensorReading::where('sensor_id', $selected)
             ->orderByDesc('registrado_em')
-            ->limit(200)
-            ->get();
+            ->paginate(50)
+            ->withQueryString();
 
         return view('history.index', compact('sensors', 'selected', 'readings'));
     }

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Alert;
 use App\Models\Sensor;
 use App\Models\SensorReading;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -17,9 +18,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Carbon::setLocale('pt_BR');
+
         // ── View composers ──────────────────────────────────────────────────────
         View::composer('layout.sidebar', function ($view) {
-            $sensors    = Sensor::with(['ultimaLeitura', 'bairro'])->where('ativo', true)->orderBy('codigo')->get();
+            $sensors    = Sensor::with(['ultimaLeitura', 'bairro', 'endereco'])->where('ativo', true)->orderBy('codigo')->get();
             $alertCount = Alert::whereNull('resolvido_em')->count();
 
             $view->with('navSensors', $sensors)
@@ -27,12 +30,12 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('layout.footer', function ($view) {
-            $ativos   = Sensor::where('ativo', true)->count();
-            $lastSync = SensorReading::max('registrado_em');
+            $ativos      = Sensor::where('ativo', true)->count();
+            $lastReading = SensorReading::latest('registrado_em')->first(['registrado_em']);
 
             $view->with('footerActiveSensors', $ativos)
                  ->with('footerTotalSensors',  $ativos)
-                 ->with('footerLastSync',       $lastSync);
+                 ->with('footerLastSync',       $lastReading?->registrado_em);
         });
 
         // ── SQL query logger (INSERT / UPDATE / DELETE apenas) ──────────────────
