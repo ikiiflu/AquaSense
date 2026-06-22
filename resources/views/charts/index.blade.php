@@ -2,9 +2,25 @@
 
 @section('title', 'AquaSense - Gráficos')
 
+@push('styles')
+<style>
+.chart-section { padding: 0 1.5rem 2rem; }
+.chart-table-section { padding: 0 1.5rem 2rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@media (max-width: 640px) {
+    .chart-section { padding: 0 0 1.5rem; }
+    .chart-table-section { padding: 0 0 1.5rem; }
+}
+</style>
+@endpush
+
 @section('content')
 @php
-$statusColor = ['ok' => '#00D4AA', 'atencao' => '#F59E0B', 'risco' => '#F97316', 'critico' => '#EF4444'];
+$statusColor = [
+    'ok'      => 'var(--status-ok)',
+    'atencao' => 'var(--status-atencao)',
+    'risco'   => 'var(--status-risco)',
+    'critico' => 'var(--status-critico)',
+];
 @endphp
 
 <div class="dash-header">
@@ -17,7 +33,7 @@ $statusColor = ['ok' => '#00D4AA', 'atencao' => '#F59E0B', 'risco' => '#F97316',
 </div>
 
 {{-- Obstrução por sensor --}}
-<section style="padding:0 1.5rem 2rem">
+<section class="chart-section">
     <h2 style="font-size:0.9rem;font-weight:600;margin-bottom:1rem;color:var(--ink-dim)">Obstrução atual por sensor</h2>
 
     @if($sensors->isEmpty())
@@ -50,7 +66,7 @@ $statusColor = ['ok' => '#00D4AA', 'atencao' => '#F59E0B', 'risco' => '#F97316',
 
 {{-- Vazão por sensor --}}
 @if($sensors->isNotEmpty())
-<section style="padding:0 1.5rem 2rem">
+<section class="chart-section">
     <h2 style="font-size:0.9rem;font-weight:600;margin-bottom:1rem;color:var(--ink-dim)">Vazão atual por sensor (L/s)</h2>
 
     @php $maxFlow = $sensors->map(fn($s) => $s->ultimaLeitura?->vazao_lps ?? 0)->max() ?: 1; @endphp
@@ -85,7 +101,7 @@ $statusColor = ['ok' => '#00D4AA', 'atencao' => '#F59E0B', 'risco' => '#F97316',
     })->sortKeys();
 @endphp
 
-<section style="padding:0 1.5rem 2rem">
+<section class="chart-section">
     <h2 style="font-size:0.9rem;font-weight:600;margin-bottom:1rem;color:var(--ink-dim)">Obstrução média por bairro</h2>
     <div style="display:flex;flex-direction:column;gap:0.75rem">
         @foreach($porBairro as $bairro => $data)
@@ -108,7 +124,7 @@ $statusColor = ['ok' => '#00D4AA', 'atencao' => '#F59E0B', 'risco' => '#F97316',
 </section>
 
 {{-- Resumo por bairro (tabela) --}}
-<section style="padding:0 1.5rem 2rem;overflow-x:auto">
+<section class="chart-table-section">
     <h2 style="font-size:0.9rem;font-weight:600;margin-bottom:1rem;color:var(--ink-dim)">Resumo por bairro</h2>
     <table style="width:100%;border-collapse:collapse;font-size:0.82rem;min-width:420px">
         <thead>

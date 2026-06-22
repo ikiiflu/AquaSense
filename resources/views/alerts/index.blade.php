@@ -117,11 +117,21 @@
     <div style="background:var(--panel);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden">
 
         {{-- Cabeçalho fixo --}}
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--line);flex-shrink:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;padding:1rem 1.25rem;border-bottom:1px solid var(--line);flex-shrink:0">
             <h2 style="font-size:0.9rem;font-weight:700;color:var(--ink-dim);margin:0">Resolvidos recentemente</h2>
-            @if($resolvedAlerts->count() > 0)
-                <span style="background:var(--panel);border:1px solid var(--line);color:var(--ink-dim);font-size:0.7rem;font-weight:600;border-radius:99px;padding:0.15rem 0.6rem">{{ $resolvedAlerts->count() }}</span>
-            @endif
+            <div style="display:flex;align-items:center;gap:0.5rem">
+                @if($resolvedAlerts->count() > 0)
+                    <span style="background:var(--panel);border:1px solid var(--line);color:var(--ink-dim);font-size:0.7rem;font-weight:600;border-radius:99px;padding:0.15rem 0.6rem">{{ $resolvedAlerts->count() }}</span>
+                    <form method="POST" action="{{ route('alerts.clearResolved') }}" style="margin:0"
+                          onsubmit="return confirm('Remover todos os alertas resolvidos?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" style="padding:0.2rem 0.6rem;font-size:0.65rem;font-weight:600;border-radius:4px;border:1px solid var(--line);color:var(--ink-muted);cursor:pointer;font-family:var(--font-body);background:transparent;white-space:nowrap">
+                            Limpar todos
+                        </button>
+                    </form>
+                @endif
+            </div>
         </div>
 
         {{-- Corpo scrollável --}}

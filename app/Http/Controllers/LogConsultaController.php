@@ -8,7 +8,7 @@ class LogConsultaController extends Controller
 {
     public function index()
     {
-        $logs = LogConsulta::orderByDesc('executado_em')->limit(100)->get();
+        $logs = LogConsulta::orderByDesc('executado_em')->limit(200)->get();
 
         return view('comandos.index', compact('logs'));
     }

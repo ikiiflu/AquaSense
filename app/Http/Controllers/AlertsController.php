@@ -37,4 +37,12 @@ class AlertsController extends Controller
         $alert->delete();
         return redirect()->route('alerts.index')->with('success', 'Alerta excluido.');
     }
+
+    public function clearResolved()
+    {
+        $count = Alert::whereNotNull('resolvido_em')->count();
+        Alert::whereNotNull('resolvido_em')->delete();
+        return redirect()->route('alerts.index')
+            ->with('success', "{$count} alerta(s) resolvido(s) removido(s).");
+    }
 }

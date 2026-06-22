@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/alerts',           [AlertsController::class, 'index'])->name('alerts.index');
     Route::post('/alerts/{alert}/resolve', [AlertsController::class, 'resolve'])->name('alerts.resolve');
     Route::delete('/alerts/{alert}',       [AlertsController::class, 'destroy'])->name('alerts.destroy');
+    Route::delete('/alerts-resolved',      [AlertsController::class, 'clearResolved'])->name('alerts.clearResolved');
     Route::get('/history',   [HistoryController::class,   'index'])->name('history.index');
     Route::get('/charts',    [ChartsController::class,    'index'])->name('charts.index');
 
