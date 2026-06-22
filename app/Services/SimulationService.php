@@ -51,36 +51,35 @@ class SimulationService
             default       => ($hora >= 14 && $hora <= 18), // normal: simula período de chuva à tarde
         };
 
-        $chuvaForte = match ($modo) {
-            'tempestade'  => true,
-            'chuva_forte' => true,
-            default       => false,
-        };
-
-        $semChuva = ($modo === 'sem_chuva');
+        $chuvaForte = ($modo === 'chuva_forte' || $modo === 'tempestade');
+        $chuvaFraca = ($modo === 'chuva_fraca');
+        $semChuva   = ($modo === 'sem_chuva');
 
         // Obstrução: random walk sobre a última leitura
         $ultima        = $sensor->ultimaLeitura;
         $obstrucaoPrev = $ultima?->obstrucao_pct ?? mt_rand(5, 30);
 
-        // Obstrução: caminhada aleatória — sobe mais em modo chuva
-        $tendencia = match (true) {
-            $tempestade  => 2.5,
-            $chuvaForte  => 1.5,
-            $semChuva    => -1.0,
-            default      => -0.3,
+        // Tendência por modo — independente do horário
+        $tendencia = match ($modo) {
+            'tempestade'  =>  2.5,   // ~17 min (10%→100%)
+            'chuva_forte' =>  1.5,   // ~26 min
+            'normal'      =>  0.8,   // ~45 min
+            'chuva_fraca' =>  0.5,   // ~65 min
+            'sem_chuva'   => -1.0,   // ~57 min (100%→10%)
+            default       =>  0.8,
         };
         // Drenagem progressiva: quanto mais obstruído, maior a força de limpeza natural
         $drenagem  = $obstrucaoPrev > 70 ? ($obstrucaoPrev - 70) / 100 : 0.0;
         $delta     = (mt_rand(0, 100) / 100 - 0.45) * 5 + $tendencia - $drenagem;
         $obstrucao = max(0.0, min(100.0, (float) $obstrucaoPrev + $delta));
 
-        // Precipitação conforme modo
+        // Precipitação conforme modo (normal usa variação por horário à tarde)
         $precipitacao = match (true) {
             $semChuva    => round(mt_rand(0, 30) / 100, 3),
             $tempestade  => round(mt_rand(15, 25) + (mt_rand(-100, 100) / 100), 3),
-            $chuvaForte  => round(mt_rand(8, 16) + (mt_rand(-100, 100) / 100), 3),
-            default      => round(mt_rand(1, 4) + (mt_rand(-100, 100) / 100), 3),
+            $chuvaForte  => round(mt_rand(8, 16)  + (mt_rand(-100, 100) / 100), 3),
+            $chuvaFraca  => round(mt_rand(2, 6)   + (mt_rand(-100, 100) / 100), 3),
+            default      => round(mt_rand(1, 4)   + (mt_rand(-100, 100) / 100), 3),
         };
 
         // Vazão: a chuva empurra água pelo bueiro; a obstrução limita o que passa.
