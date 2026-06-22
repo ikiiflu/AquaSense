@@ -5,7 +5,8 @@
 @push('styles')
 <style>
 .chart-section { padding: 0 1.5rem 2rem; }
-.chart-table-section { padding: 0 1.5rem 2rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.chart-table-section { padding: 0 1.5rem 2rem; }
+.chart-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 @media (max-width: 640px) {
     .chart-section { padding: 0 0 1.5rem; }
     .chart-table-section { padding: 0 0 1.5rem; }
@@ -126,6 +127,7 @@ $statusColor = [
 {{-- Resumo por bairro (tabela) --}}
 <section class="chart-table-section">
     <h2 style="font-size:0.9rem;font-weight:600;margin-bottom:1rem;color:var(--ink-dim)">Resumo por bairro</h2>
+    <div class="chart-table-scroll">
     <table style="width:100%;border-collapse:collapse;font-size:0.82rem;min-width:420px">
         <thead>
             <tr style="text-align:left;border-bottom:1px solid var(--line);color:var(--ink-dim)">
@@ -148,6 +150,7 @@ $statusColor = [
             @endforeach
         </tbody>
     </table>
+    </div>
 </section>
 @endif
 @stop

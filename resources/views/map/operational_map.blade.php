@@ -12,9 +12,11 @@
 }
 .map-hint-pill { display: block; }
 @media (max-width: 960px) {
-    .map-full { height: calc(100vh - 168px); } /* 120 + 48 topbar */
+    .app-content { padding: 0 !important; }
+    .map-section { border-radius: 0; border-left: none; border-right: none; }
+    .map-full { height: calc(100vh - 168px); }
     .map-hint-pill { display: none; }
-    .map-overlay-top { flex-wrap: wrap; gap: 6px; }
+    .map-overlay-top { flex-wrap: wrap; gap: 6px; padding: 6px 8px; }
     .map-pill { font-size: 0.7rem; padding: 4px 10px; }
 }
 </style>
