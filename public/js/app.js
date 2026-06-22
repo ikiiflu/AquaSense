@@ -104,9 +104,10 @@
   });
 
   // ---- Recarga automática global ----
-  var isMapPage   = window.location.pathname === "/map";
-  var countdownEl = document.getElementById("next-refresh-countdown");
-  var STORAGE_KEY = "aquasense_next_refresh";
+  var isMapPage          = window.location.pathname === "/map";
+  var countdownEl        = document.getElementById("next-refresh-countdown");
+  var mobileCountdownEl  = document.getElementById("mobile-refresh-countdown");
+  var STORAGE_KEY        = "aquasense_next_refresh";
 
   if (!isMapPage && REFRESH_INTERVAL_MS >= 5000) {
 
@@ -128,16 +129,17 @@
 
     setInterval(function () {
       var remaining = Math.max(0, Math.round((nextAt - Date.now()) / 1000));
-      if (countdownEl) countdownEl.textContent = remaining + "s";
+      if (countdownEl)       countdownEl.textContent       = remaining + "s";
+      if (mobileCountdownEl) mobileCountdownEl.textContent = remaining + "s";
       if (Date.now() >= nextAt) {
         nextAt = Infinity;
         doRefresh();
       }
     }, 1000);
 
-    if (countdownEl) {
-      countdownEl.textContent = Math.max(0, Math.round((nextAt - now) / 1000)) + "s";
-    }
+    var initialRemaining = Math.max(0, Math.round((nextAt - now) / 1000)) + "s";
+    if (countdownEl)       countdownEl.textContent       = initialRemaining;
+    if (mobileCountdownEl) mobileCountdownEl.textContent = initialRemaining;
   }
 
   // ---- Init ----

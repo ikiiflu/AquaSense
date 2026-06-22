@@ -960,13 +960,29 @@ button,
 /* ---- Mobile top bar ---- */
 .mobile-topbar {
   display: none;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  height: 48px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px 16px;
   flex-shrink: 0;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
+}
+
+.mobile-topbar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.mobile-topbar-sync {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.62rem;
+  color: var(--ink-dim);
+  font-family: var(--font-data);
+  padding-left: 2px;
 }
 
 .mobile-menu-btn {
