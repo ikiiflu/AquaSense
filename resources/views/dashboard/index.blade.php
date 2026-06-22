@@ -39,11 +39,11 @@
     $flow    = $metrics['avg_flow'];
 
     $obsSt   = is_null($obs)  ? 'ok' : ($obs  >= 70 ? 'critico' : ($obs  >= 40 ? 'risco' : ($obs  >= 10 ? 'atencao' : 'ok')));
-    $rainSt  = is_null($rain) ? 'ok' : ($rain > 10  ? 'critico' : ($rain > 4   ? 'risco' : ($rain > 0   ? 'atencao' : 'ok')));
+    $rainSt  = is_null($rain) ? 'ok' : ($rain > 10 ? 'critico' : ($rain > 4 ? 'risco' : ($rain > 0.2 ? 'atencao' : 'ok')));
     $flowSt  = 'ok';
 
     $obsLbl  = is_null($obs)  ? 'Sem dados'  : ['ok'=>'Dentro do limite','atencao'=>'Atenção','risco'=>'Risco elevado','critico'=>'Crítico'][$obsSt];
-    $rainLbl = is_null($rain) ? 'Sem dados'  : ($rain > 10 ? 'Chuva intensa' : ($rain > 4 ? 'Chuva moderada' : ($rain > 0 ? 'Chuva leve' : 'Sem chuva')));
+    $rainLbl = is_null($rain) ? 'Sem dados'  : ($rain > 10 ? 'Chuva intensa' : ($rain > 4 ? 'Chuva moderada' : ($rain > 0.2 ? 'Chuva leve' : ($rain > 0 ? 'Umidade residual' : 'Sem chuva'))));
     $flowLbl = is_null($flow) ? 'Sem dados'  : 'Fluxo normal';
 @endphp
 

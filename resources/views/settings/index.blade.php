@@ -38,17 +38,27 @@
             </label>
             <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.25rem">
                 @foreach([
-                    ['sem_chuva',   'Sem chuva',    'Precipitação mínima, obstrução tende a cair'],
-                    ['normal',      'Normal',        'Variação automática por horário (chuva à tarde)'],
-                    ['chuva_fraca', 'Chuva fraca',   'Precipitação leve, obstrução sobe lentamente'],
-                    ['chuva_forte', 'Chuva forte',   'Precipitação alta, obstrução sobe rápido'],
-                    ['tempestade',  'Tempestade',    'Precipitação máxima, risco crítico acelerado'],
-                ] as [$val, $lbl, $desc])
+                    // [$val, $lbl, $desc, $chuva, $tSubida (10→100%), $tDescida (100→10%)]
+                    ['sem_chuva',   'Sem chuva',   'Drenagem natural, sem precipitação significativa',   '0–0,30 mm', null,      '~80 min'],
+                    ['chuva_fraca', 'Chuva fraca', 'Precipitação leve, obstrução sobe lentamente',       '2–6 mm',    '~65 min', null],
+                    ['normal',      'Moderada',    'Precipitação moderada, obstrução sobe gradualmente', '4–10 mm',   '~45 min', null],
+                    ['chuva_forte', 'Chuva forte', 'Precipitação alta, obstrução sobe rápido',           '8–16 mm',   '~26 min', null],
+                    ['tempestade',  'Tempestade',  'Precipitação máxima, risco crítico acelerado',       '15–25 mm',  '~17 min', null],
+                ] as [$val, $lbl, $desc, $chuva, $tSubida, $tDescida])
                     <label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.6rem 0.85rem;border-radius:8px;border:1.5px solid {{ $modoSim === $val ? 'var(--flow)' : 'var(--line)' }};cursor:pointer;background:{{ $modoSim === $val ? 'var(--panel)' : 'transparent' }};transition:border-color 0.15s">
                         <input type="radio" name="modo_simulacao" value="{{ $val }}" {{ $modoSim === $val ? 'checked' : '' }} style="margin-top:0.15rem;accent-color:var(--flow)">
                         <span>
                             <span style="display:block;font-size:0.82rem;font-weight:600;color:var(--ink)">{{ $lbl }}</span>
                             <span style="display:block;font-size:0.72rem;color:var(--ink-dim);margin-top:0.1rem">{{ $desc }}</span>
+                            <span style="display:flex;gap:1rem;margin-top:0.35rem;flex-wrap:wrap">
+                                <span style="font-size:0.68rem;color:var(--ink-dim)">Chuva: <strong style="color:var(--ink);font-weight:600">{{ $chuva }}</strong></span>
+                                @if($tSubida)
+                                <span style="font-size:0.68rem;color:var(--ink-dim)">10%→100%: <strong style="color:var(--ink);font-weight:600">{{ $tSubida }}</strong></span>
+                                @endif
+                                @if($tDescida)
+                                <span style="font-size:0.68rem;color:var(--ink-dim)">100%→10%: <strong style="color:var(--ink);font-weight:600">{{ $tDescida }}</strong></span>
+                                @endif
+                            </span>
                         </span>
                     </label>
                 @endforeach
