@@ -318,15 +318,18 @@ MODOS DE ATUALIZAÇÃO
        │
        │ Timer chega a zero
        ▼
-  [fetch POST /api/leituras/gerar]
-       │
+  [Cron do servidor (a cada minuto)]
+       │  * * * * * php artisan schedule:run
        ▼
-  [ReadingGeneratorController]
+  [sensor:simulate (Artisan Command)]
        │
        ▼
   [SimulationService]
        │  para cada sensor: gera obstrução, precipitação, vazão
        │  grava leitura no MySQL
        │  avalia alertas (cria / atualiza / resolve)
+
+  [Timer localStorage chega a zero]
+       │
        ▼
   [location.reload()]  →  página recarrega com dados novos do banco
