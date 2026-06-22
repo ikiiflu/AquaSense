@@ -108,9 +108,9 @@ $statusColor = ['ok' => '#00D4AA', 'atencao' => '#F59E0B', 'risco' => '#F97316',
 </section>
 
 {{-- Resumo por bairro (tabela) --}}
-<section style="padding:0 1.5rem 2rem">
+<section style="padding:0 1.5rem 2rem;overflow-x:auto">
     <h2 style="font-size:0.9rem;font-weight:600;margin-bottom:1rem;color:var(--ink-dim)">Resumo por bairro</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:0.82rem">
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;min-width:420px">
         <thead>
             <tr style="text-align:left;border-bottom:1px solid var(--line);color:var(--ink-dim)">
                 <th style="padding:0.5rem 0.75rem">Bairro</th>

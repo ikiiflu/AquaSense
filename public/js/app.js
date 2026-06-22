@@ -75,6 +75,35 @@
     });
   });
 
+  // ---- Sidebar mobile: hamburger toggle ----
+  var sidebar    = document.querySelector(".app-sidebar");
+  var overlay    = document.getElementById("sidebar-overlay");
+  var menuBtn    = document.getElementById("mobile-menu-btn");
+  var closeBtn   = document.getElementById("sidebar-close-btn");
+
+  function openSidebar() {
+    sidebar.classList.add("is-open");
+    overlay.classList.add("is-visible");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove("is-open");
+    overlay.classList.remove("is-visible");
+    document.body.style.overflow = "";
+  }
+
+  if (menuBtn)  menuBtn.addEventListener("click", openSidebar);
+  if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
+  if (overlay)  overlay.addEventListener("click", closeSidebar);
+
+  // Fecha sidebar ao navegar (mobile)
+  document.querySelectorAll(".sidebar-nav a").forEach(function (link) {
+    link.addEventListener("click", function () {
+      if (window.innerWidth <= 960) closeSidebar();
+    });
+  });
+
   // ---- Recarga automática global (timer persiste entre navegações via localStorage) ----
   // O servidor gera leituras via cron; o browser só precisa recarregar para ver os dados novos.
   var isMapPage = window.location.pathname === "/map";

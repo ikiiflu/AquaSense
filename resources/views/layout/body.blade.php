@@ -23,11 +23,20 @@
     <div class="app-shell">
         @include('layout.sidebar')
         <main class="app-main" id="app-main">
+            <div class="mobile-topbar">
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Abrir menu">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                        <path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <span class="mobile-topbar-brand">Aqua<span>Sense</span></span>
+            </div>
             <div class="app-content">
                 @yield('content')
             </div>
             @include('layout.footer')
         </main>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
     </div>
     <script src="{{ asset('js/app.js') }}?v={{ time() }}" defer></script>
     @stack('scripts')

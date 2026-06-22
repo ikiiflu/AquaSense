@@ -5,6 +5,11 @@
             <div class="sidebar-brand-name">Aqua<span>Sense</span></div>
             <div class="sidebar-brand-tagline">Monitorar. Antecipar. Agir.</div>
         </div>
+        <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Fechar menu">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+        </button>
     </div>
 
     <nav class="sidebar-nav">

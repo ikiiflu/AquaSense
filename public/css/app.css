@@ -957,6 +957,75 @@ button,
   }
 }
 
+/* ---- Mobile top bar ---- */
+.mobile-topbar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 48px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  color: var(--ink);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.mobile-menu-btn:hover {
+  background: var(--panel-raised);
+}
+
+.mobile-topbar-brand {
+  font-family: var(--font-data);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.mobile-topbar-brand span {
+  color: var(--flow);
+}
+
+/* ---- Sidebar close button (mobile only) ---- */
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  padding: 4px;
+  margin-left: auto;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn:hover {
+  color: var(--ink);
+}
+
+/* ---- Overlay (mobile sidebar backdrop) ---- */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99;
+  backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.is-visible {
+  display: block;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 960px) {
   .app-shell {
@@ -970,13 +1039,31 @@ button,
   .app-sidebar.is-open {
     display: flex;
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(280px, 85vw);
     z-index: 100;
-    width: 100%;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.6);
+  }
+
+  .mobile-topbar {
+    display: flex;
+  }
+
+  .sidebar-close-btn {
+    display: flex;
+    align-items: center;
   }
 
   .app-statusbar {
     grid-column: 1;
+  }
+
+  /* Status bar: mostra só o essencial no mobile */
+  .statusbar-left .statusbar-item:nth-child(n+2),
+  .statusbar-left .statusbar-divider {
+    display: none;
   }
 
   .metrics-grid {
@@ -995,6 +1082,12 @@ button,
 
   .city-band {
     height: 40px;
+  }
+
+  /* Tabelas: scroll horizontal em telas pequenas */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -1019,6 +1112,12 @@ button,
   .city-band {
     height: 32px;
     border-radius: var(--radius-sm);
+  }
+
+  /* Status bar direita: só o relógio */
+  .statusbar-right .statusbar-item:not(:last-child),
+  .statusbar-right .statusbar-divider {
+    display: none;
   }
 }
 
