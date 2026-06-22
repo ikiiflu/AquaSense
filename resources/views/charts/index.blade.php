@@ -141,9 +141,9 @@ $statusColor = [
                 <tr style="border-bottom:1px solid var(--line)">
                     <td style="padding:0.5rem 0.75rem;font-weight:600">{{ $bairro }}</td>
                     <td style="padding:0.5rem 0.75rem;color:var(--ink-dim)">{{ $data['count'] }}</td>
-                    <td style="padding:0.5rem 0.75rem;font-family:var(--font-mono)">{{ $data['avg_obstruction'] ?? '-' }}</td>
-                    <td style="padding:0.5rem 0.75rem;font-family:var(--font-mono)">{{ $data['avg_rainfall'] ?? '-' }}</td>
-                    <td style="padding:0.5rem 0.75rem;font-family:var(--font-mono)">{{ $data['avg_flow'] ?? '-' }}</td>
+                    <td style="padding:0.5rem 0.75rem;font-family:var(--font-mono)">{{ is_null($data['avg_obstruction']) ? '-' : number_format($data['avg_obstruction'], 1) }}</td>
+                    <td style="padding:0.5rem 0.75rem;font-family:var(--font-mono)">{{ is_null($data['avg_rainfall']) ? '-' : number_format($data['avg_rainfall'], 2) }}</td>
+                    <td style="padding:0.5rem 0.75rem;font-family:var(--font-mono)">{{ is_null($data['avg_flow']) ? '-' : number_format($data['avg_flow'], 1) }}</td>
                 </tr>
             @endforeach
         </tbody>

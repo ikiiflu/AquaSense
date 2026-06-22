@@ -71,29 +71,35 @@
 
 {{-- ── Banda de status por sensor ──────────────────────────────────── --}}
 @if($sensors->isNotEmpty())
-<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:0.6rem 1rem;display:flex;align-items:center;gap:0.5rem;overflow-x:auto">
-    <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-muted);font-weight:600;white-space:nowrap;margin-right:0.25rem">Rede</span>
-    @foreach($sensors as $s)
-        @php
-            $sCor = $statusColors[$s->status] ?? '#10B981';
-            $sObs = $s->ultimaLeitura?->obstrucao_pct ?? 0;
-        @endphp
-        <div title="{{ $s->nome }} — {{ number_format($sObs,1) }}% obstrução" style="display:flex;flex-direction:column;align-items:center;gap:0.25rem;min-width:44px">
-            <div style="width:36px;height:6px;background:var(--line);border-radius:3px;overflow:hidden">
-                <div style="width:{{ max(4,(int)$sObs) }}%;height:100%;background:{{ $sCor }};border-radius:3px;transition:width 0.4s"></div>
-            </div>
-            <span style="font-size:0.6rem;font-family:var(--font-data);color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44px;text-align:center">{{ $s->codigo }}</span>
+<div style="background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:0.6rem 1rem;display:flex;flex-direction:column;gap:0.5rem">
+    {{-- Linha 1: label + legenda --}}
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
+        <span style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-muted);font-weight:600;white-space:nowrap">Rede</span>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+            @foreach(['ok'=>'Normal','atencao'=>'Atenção','risco'=>'Risco','critico'=>'Crítico'] as $st => $lb)
+                @if($statusCounts[$st] > 0)
+                    @php $c = $statusColors[$st]; @endphp
+                    <span style="font-size:0.65rem;color:{{ $c }};display:flex;align-items:center;gap:0.3rem;white-space:nowrap">
+                        <span style="width:6px;height:6px;border-radius:50%;background:{{ $c }};display:inline-block"></span>
+                        {{ $statusCounts[$st] }} {{ $lb }}
+                    </span>
+                @endif
+            @endforeach
         </div>
-    @endforeach
-    <div style="margin-left:auto;display:flex;gap:0.75rem;flex-shrink:0">
-        @foreach(['ok'=>'Normal','atencao'=>'Atenção','risco'=>'Risco','critico'=>'Crítico'] as $st => $lb)
-            @if($statusCounts[$st] > 0)
-                @php $c = $statusColors[$st]; @endphp
-                <span style="font-size:0.65rem;color:{{ $c }};display:flex;align-items:center;gap:0.3rem;white-space:nowrap">
-                    <span style="width:6px;height:6px;border-radius:50%;background:{{ $c }};display:inline-block"></span>
-                    {{ $statusCounts[$st] }} {{ $lb }}
-                </span>
-            @endif
+    </div>
+    {{-- Linha 2: barras dos sensores (scroll horizontal) --}}
+    <div style="display:flex;align-items:center;gap:0.5rem;overflow-x:auto;padding-bottom:2px">
+        @foreach($sensors as $s)
+            @php
+                $sCor = $statusColors[$s->status] ?? '#10B981';
+                $sObs = $s->ultimaLeitura?->obstrucao_pct ?? 0;
+            @endphp
+            <div title="{{ $s->nome }} — {{ number_format($sObs,1) }}% obstrução" style="display:flex;flex-direction:column;align-items:center;gap:0.25rem;min-width:44px;flex-shrink:0">
+                <div style="width:36px;height:6px;background:var(--line);border-radius:3px;overflow:hidden">
+                    <div style="width:{{ max(4,(int)$sObs) }}%;height:100%;background:{{ $sCor }};border-radius:3px;transition:width 0.4s"></div>
+                </div>
+                <span style="font-size:0.6rem;font-family:var(--font-data);color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44px;text-align:center">{{ $s->codigo }}</span>
+            </div>
         @endforeach
     </div>
 </div>
