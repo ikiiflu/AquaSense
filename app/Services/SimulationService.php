@@ -67,7 +67,7 @@ class SimulationService
         $tendencia = match (true) {
             $tempestade  => 2.5,
             $chuvaForte  => 1.5,
-            $semChuva    => -2.0,
+            $semChuva    => -1.0,
             default      => -0.3,
         };
         // Drenagem progressiva: quanto mais obstruído, maior a força de limpeza natural
