@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
                  ->with('navAlertCount', $alertCount);
         });
 
-        View::composer('layout.footer', function ($view) {
+        View::composer('layout.body', function ($view) {
             $ativos      = Sensor::where('ativo', true)->count();
             $lastReading = SensorReading::latest('registrado_em')->first(['registrado_em']);
 
