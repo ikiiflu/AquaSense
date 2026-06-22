@@ -78,13 +78,14 @@ class SimulationService
         }
         $obstrucao = max(0.0, min(100.0, (float) $obstrucaoPrev + $delta));
 
-        // Precipitação conforme modo (normal usa variação por horário à tarde)
-        $precipitacao = match (true) {
-            $semChuva    => round(mt_rand(0, 30) / 100, 3),
-            $tempestade  => round(mt_rand(15, 25) + (mt_rand(-100, 100) / 100), 3),
-            $chuvaForte  => round(mt_rand(8, 16)  + (mt_rand(-100, 100) / 100), 3),
-            $chuvaFraca  => round(mt_rand(2, 6)   + (mt_rand(-100, 100) / 100), 3),
-            default      => round(mt_rand(1, 4)   + (mt_rand(-100, 100) / 100), 3),
+        // Precipitação conforme modo
+        $precipitacao = match ($modo) {
+            'sem_chuva'   => round(mt_rand(0, 30) / 100, 3),
+            'tempestade'  => round(mt_rand(15, 25) + (mt_rand(-100, 100) / 100), 3),
+            'chuva_forte' => round(mt_rand(8, 16)  + (mt_rand(-100, 100) / 100), 3),
+            'normal'      => round(mt_rand(4, 10)  + (mt_rand(-100, 100) / 100), 3),
+            'chuva_fraca' => round(mt_rand(2, 6)   + (mt_rand(-100, 100) / 100), 3),
+            default       => round(mt_rand(4, 10)  + (mt_rand(-100, 100) / 100), 3),
         };
 
         // Vazão: a chuva empurra água pelo bueiro; a obstrução limita o que passa.
