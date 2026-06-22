@@ -61,7 +61,7 @@ php artisan db:seed
 Acesse `http://localhost` (ou o virtual host configurado).
 
 **Login padrão:** `admin@aquasense.com` / `password`
-> Troque a senha antes de expor em produção.
+> Senha provisória de desenvolvimento.
 
 ---
 
